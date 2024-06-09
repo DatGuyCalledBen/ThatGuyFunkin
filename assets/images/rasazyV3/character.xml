@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TextureAtlas imagePath="character.png"><SubTexture name="rasazyV3 idle0000" x="4174" y="0" width="882" height="1446" frameX="-430" frameY="-35" frameWidth="1500" frameHeight="1500" />
+<TextureAtlas imagePath="rasazyV3/character.png"><SubTexture name="rasazyV3 idle0000" x="4174" y="0" width="882" height="1446" frameX="-430" frameY="-35" frameWidth="1500" frameHeight="1500" />
 <SubTexture name="rasazyV3 idle0001" x="3316" y="0" width="858" height="1457" frameX="-443" frameY="-24" frameWidth="1500" frameHeight="1500" />
 <SubTexture name="rasazyV3 idle0002" x="2482" y="0" width="834" height="1465" frameX="-447" frameY="-16" frameWidth="1500" frameHeight="1500" />
 <SubTexture name="rasazyV3 idle0003" x="1649" y="0" width="833" height="1466" frameX="-443" frameY="-15" frameWidth="1500" frameHeight="1500" />

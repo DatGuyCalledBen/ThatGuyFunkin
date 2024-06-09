@@ -21,8 +21,14 @@ function loadSubtextureData(xmlPath) {
       .then(xmlText => {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-        const subTextures = xmlDoc.getElementsByTagName('SubTexture');
 
+        // Check if XML document contains subtexture data
+        const subTextures = xmlDoc.getElementsByTagName('SubTexture');
+        if (!subTextures || subTextures.length === 0) {
+          throw new Error('No subtexture data found in XML document');
+        }
+
+        // Parse subtexture data from XML
         for (let i = 0; i < subTextures.length; i++) {
           const subTexture = subTextures[i];
           const name = subTexture.getAttribute('name');
@@ -47,10 +53,15 @@ function loadSubtextureData(xmlPath) {
           };
         }
 
+        // Check if subtexture data was successfully parsed
+        if (Object.keys(SubtextureData).length === 0) {
+          throw new Error('Failed to parse subtexture data from XML document');
+        }
+
         resolve(SubtextureData);
       })
       .catch(error => {
-        reject(new Error(`Error loading subtexture data from ${xmlPath}: ${error.message}`));
+        reject(new Error(`Error loading or parsing subtexture data from ${xmlPath}: ${error.message}`));
       });
   });
 }
