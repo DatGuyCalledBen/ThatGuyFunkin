@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TextureAtlas imagePath="rasazyV3.png"><SubTexture name="rasazyV3 idle0000" x="4174" y="0" width="882" height="1446" frameX="-430" frameY="-35" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 idle0001" x="3316" y="0" width="858" height="1457" frameX="-443" frameY="-24" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 idle0002" x="2482" y="0" width="834" height="1465" frameX="-447" frameY="-16" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 idle0003" x="1649" y="0" width="833" height="1466" frameX="-443" frameY="-15" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 idle0004" x="825" y="0" width="824" height="1467" frameX="-438" frameY="-14" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 idle0005" x="0" y="0" width="825" height="1470" frameX="-436" frameY="-11" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 down0000" x="694" y="4373" width="696" height="1342" frameX="-467" frameY="-127" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 down0001" x="0" y="4373" width="694" height="1349" frameX="-467" frameY="-120" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 down0002" x="5727" y="0" width="677" height="1363" frameX="-479" frameY="-106" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 down0003" x="5056" y="0" width="671" height="1365" frameX="-482" frameY="-104" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 left0000" x="3319" y="2934" width="833" height="1427" frameX="-310" frameY="-54" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 left0001" x="1657" y="2934" width="831" height="1435" frameX="-312" frameY="-46" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 left0002" x="4174" y="1446" width="814" height="1440" frameX="-329" frameY="-41" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 left0003" x="3316" y="1457" width="814" height="1439" frameX="-329" frameY="-42" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 right0000" x="4152" y="2934" width="843" height="1423" frameX="-457" frameY="-34" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 right0001" x="2488" y="2934" width="831" height="1433" frameX="-457" frameY="-24" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 right0002" x="824" y="2934" width="833" height="1436" frameX="-461" frameY="-21" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 right0003" x="0" y="2934" width="824" height="1439" frameX="-473" frameY="-18" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 up0000" x="704" y="1470" width="703" height="1462" frameX="-451" frameY="-19" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 up0001" x="0" y="1470" width="704" height="1464" frameX="-450" frameY="-17" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 up0002" x="2120" y="1470" width="709" height="1459" frameX="-445" frameY="-22" frameWidth="1500" frameHeight="1500" />
+<SubTexture name="rasazyV3 up0003" x="1407" y="1470" width="713" height="1461" frameX="-441" frameY="-20" frameWidth="1500" frameHeight="1500" />
+</TextureAtlas>
