@@ -1,9 +1,7 @@
-function step(scene, characterName, animationName, frameIndex) {
-  // Render the character, health bar icon, and score
-  renderCharacter(scene, characterName, animationName, frameIndex);
-  renderHealthBarIcon(scene, characterName);
-  renderScore(scene);
-}
+// game_logic.js
+
+import { renderHealthBarIcon, renderScore } from './rendering.js';
+import { animateCharacter } from './animation.js';
 
 function gameLoop(scene) {
   // Initialize keysPressed object and score
@@ -34,39 +32,23 @@ function gameLoop(scene) {
     }
   }
 
-  // Initialize character name, animation name, and frame index
-  let characterName = 'rasazyV3';
-  let animationName = getCharacterAnimation();
-  let frameIndex = 0;
-
-  // Get animation data from window object
-  const characterData = window.characterData;
-
-  // Find FPS and frame duration for current animation
-  const animation = characterData.animations.find(anim => anim.anim === animationName);
-  if (!animation) {
-    console.error('Animation not found:', animationName);
-    return;
-  }
-  const fps = animation.fps;
-  const frameDuration = 1000 / fps;
+  // Initialize character name
+  const characterName = 'rasazyV3';
 
   // Function to perform step and animate character
   function stepAndAnimate() {
-    animationName = getCharacterAnimation();
-    step(scene, characterName, animationName, frameIndex);
+    const animationName = getCharacterAnimation();
+    animateCharacter(scene, characterName, animationName);
 
-    // Check if the animation exists
-    const animation = characterData.animations.find(anim => anim.anim === animationName);
-    if (!animation) {
-      console.error('Animation not found:', animationName);
-      return; // or handle this situation as needed
-    }
-
-    frameIndex = (frameIndex + 1) % animation.frames.length;
-    setTimeout(stepAndAnimate, frameDuration);
+    setTimeout(stepAndAnimate, 100); // Adjust interval as needed
   }
 
   // Start the game loop
   stepAndAnimate();
+
+  // Render the health bar icon and score
+  renderHealthBarIcon(scene, characterName);
+  renderScore(scene);
 }
+
+export { gameLoop };

@@ -131,7 +131,7 @@ function initializeCharacter(characterName, scene) {
     // Create sprites for each animation
     jsonData.animations.forEach(animation => {
       // Check if animation object has required fields
-      if (!animation.name || !animation.indices || !animation.frameWidth || !animation.frameHeight) {
+      if (!animation.name || !animation.indices) {
         throw new Error('Invalid animation data: Missing required fields');
       }
 
@@ -140,24 +140,20 @@ function initializeCharacter(characterName, scene) {
         throw new Error('Invalid animation data: Indices field must be an array');
       }
 
-      const frames = animation.indices.map(index => {
-        return {
-          name: `${animation.name}${index.toString().padStart(4, '0')}`,
-          frameX: index * animation.frameWidth,
-          frameY: 0,
-          frameWidth: animation.frameWidth,
-          frameHeight: animation.frameHeight
-        };
-      });
+      animation.indices.forEach(index => {
+        const subTextureName = `${characterName} ${animation.anim}${index.toString().padStart(4, '0')}`;
+        const subTexture = findSubTextureByName(subTextureName); // Function to find subtexture by name from the XML data
+        if (!subTexture) {
+          throw new Error(`Subtexture ${subTextureName} not found in XML data`);
+        }
 
-      frames.forEach(frame => {
-        const sprite = new BABYLON.Sprite(`${frame.name}`, spriteManager);
+        const sprite = new BABYLON.Sprite(`${subTextureName}`, spriteManager);
         sprite.cellIndex = 0;
-        sprite.position.x = frame.frameX;
-        sprite.position.y = frame.frameY;
-        sprite.size = new BABYLON.Vector3(frame.frameWidth, frame.frameHeight, 1);
-        sprite.cellWidth = frame.frameWidth;
-        sprite.cellHeight = frame.frameHeight;
+        sprite.position.x = subTexture.frameX;
+        sprite.position.y = subTexture.frameY;
+        sprite.size = new BABYLON.Vector3(subTexture.frameWidth, subTexture.frameHeight, 1);
+        sprite.cellWidth = subTexture.frameWidth;
+        sprite.cellHeight = subTexture.frameHeight;
         sprite.playAnimation(0, 1, true, 1000 / characterData.sing_duration);
         sprite.isVisible = false; // Hide sprites initially
       });

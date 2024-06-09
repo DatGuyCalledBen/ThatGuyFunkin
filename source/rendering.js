@@ -1,38 +1,8 @@
 // rendering.js
 
-function renderCharacter(scene, characterName, animationName, frameIndex) {
-  const characterData = window.characterData;
-
-  // Check if character data exists and contains animations
-  if (!characterData || !characterData.animations || characterData.animations.length === 0) {
-    console.error('Invalid character data:', characterData);
-    return;
-  }
-
-  // Find the animation by name
-  const animation = characterData.animations.find(anim => anim.anim === animationName);
-
-  // Check if the animation exists and has frames
-  if (!animation || !animation.frames || animation.frames.length === 0) {
-    console.error('Invalid animation data or missing frames:', animation);
-    return;
-  }
-
-  // Check if frameIndex is within the range of frames
-  if (frameIndex < 0 || frameIndex >= animation.frames.length) {
-    console.error('Invalid frame index:', frameIndex);
-    return;
-  }
-
-  const spriteManager = new BABYLON.SpriteManager('spriteManager', `assets/images/${characterName}/character.png`, 1, 128, scene);
-  const sprite = new BABYLON.Sprite(`${characterName}_${animationName}_${frameIndex}`, spriteManager);
-
-  sprite.position = new BABYLON.Vector3(frameData.x, frameData.y, 0);
-  sprite.size = new BABYLON.Vector3(frameData.width, frameData.height, 0);
-  sprite.cellIndex = frameIndex;
-
-  sprite.playAnimation(0, animation.frames.length - 1, false, 1000 / animation.fps);
-}
+import { animateCharacter } from './animation.js';
+import { initializeCharacter } from './character.js';
+import { gameLoop } from './game_logic.js';
 
 function renderHealthBarIcon(scene, characterName) {
   const iconPath = `assets/images/${characterName}/character-icon.png`;
@@ -56,3 +26,5 @@ function renderScore(scene) {
 
   advancedTexture.addControl(scoreText);
 }
+
+export { renderHealthBarIcon, renderScore };

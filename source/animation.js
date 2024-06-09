@@ -1,51 +1,59 @@
-function animateCharacter(scene, characterName, animationName) {
+// animation.js
+
+import { loadSubtextureData, findSubTextureByName } from './subtexture.js';
+
+async function animateCharacter(scene, characterName, animationName) {
+  try {
+    // Load subtexture data
+    const subtextureData = await loadSubtextureData(`assets/images/${characterName}/character.xml`);
+
+    // Find subtextures for the animation
+    const animationFrames = Object.keys(subtextureData)
+      .filter(name => name.startsWith(animationName))
+      .map(name => subtextureData[name]);
+
+    // Create sprite manager
+    const spriteManager = createSpriteManager(scene, characterName, animationFrames.length);
+
+    // Create sprites and add animations
+    createSpritesAndAnimations(scene, spriteManager, animationFrames);
+
+  } catch (error) {
+    console.error('Error animating character:', error);
+  }
+}
+
+function createSpriteManager(scene, characterName, capacity) {
   const imagePath = `assets/images/${characterName}/character.png`;
-  const xmlPath = `assets/images/${characterName}/character.xml`;
+  return new BABYLON.SpriteManager('spriteManager', imagePath, capacity, 128, scene);
+}
 
-  fetch(xmlPath)
-    .then(response => response.text())
-    .then(xmlString => {
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+function createSpritesAndAnimations(scene, spriteManager, animationFrames) {
+  const animation = new BABYLON.AnimationGroup('animationGroup');
 
-      const animationFrames = xmlDoc.querySelectorAll(`SubTexture[name^='${animationName}']`);
-      const frames = [];
-      animationFrames.forEach(frame => {
-        const frameData = {
-          name: frame.getAttribute('name'),
-          x: parseFloat(frame.getAttribute('x')),
-          y: parseFloat(frame.getAttribute('y')),
-          width: parseFloat(frame.getAttribute('width')),
-          height: parseFloat(frame.getAttribute('height')),
-          frameX: parseFloat(frame.getAttribute('frameX')),
-          frameY: parseFloat(frame.getAttribute('frameY')),
-          frameWidth: parseFloat(frame.getAttribute('frameWidth')),
-          frameHeight: parseFloat(frame.getAttribute('frameHeight'))
-        };
-        frames.push(frameData);
-      });
+  animationFrames.forEach((frame, index) => {
+    const frameName = `Frame${index}`;
+    const sprite = new BABYLON.Sprite(frameName, spriteManager);
+    setupSprite(sprite, frame);
+    setupAnimation(animation, sprite, frame, index);
+  });
 
-      const spriteManager = new BABYLON.SpriteManager('spriteManager', imagePath, frames.length, frames[0].frameWidth, scene);
+  animation.play(true);
+}
 
-      frames.forEach((frame, index) => {
-        const sprite = new BABYLON.Sprite(frame.name, spriteManager);
-        sprite.cellIndex = index;
-        sprite.position.x = frame.x;
-        sprite.position.y = frame.y;
-        sprite.width = frame.width;
-        sprite.height = frame.height;
-        sprite.isVisible = true;
-      });
+function setupSprite(sprite, frame) {
+  sprite.cellIndex = 0;
+  sprite.position.x = frame.x;
+  sprite.position.y = frame.y;
+  sprite.size = new BABYLON.Vector3(frame.width, frame.height, 1);
+  sprite.cellWidth = frame.width;
+  sprite.cellHeight = frame.height;
+}
 
-      const animation = new BABYLON.AnimationGroup(`${animationName}AnimationGroup`);
-      frames.forEach((frame, index) => {
-        const keyFrame = new BABYLON.Animation(`${animationName}KeyFrame${index}`, 'position', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        keyFrame.setKeys([{ frame: index, value: new BABYLON.Vector3(frame.frameX, frame.frameY, 0) }]);
-        animation.addTargetedAnimation(keyFrame, spriteManager.sprites[index]);
-      });
-
-      animation.play(true);
-    });
+function setupAnimation(animation, sprite, frame, index) {
+  const keyFrame = new BABYLON.Animation(`KeyFrame${index}`, 'position', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+  keyFrame.setKeys([{ frame: index, value: new BABYLON.Vector3(frame.frameX, frame.frameY, 0) }]);
+  animation.addTargetedAnimation(keyFrame, sprite);
 }
 
 function renderHealthBarIcon(scene, characterName) {
@@ -70,3 +78,5 @@ function renderScore(scene) {
 
   advancedTexture.addControl(scoreText);
 }
+
+export { animateCharacter, renderHealthBarIcon, renderScore };
