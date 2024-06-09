@@ -1,8 +1,8 @@
 // animation.js
 
-import { loadSubtextureData, findSubTextureByName } from './subtexture.js';
+import { loadSubtextureData } from './subtexture.js';
 
-async function animateCharacter(scene, characterName, animationName) {
+async function animateCharacter(scene, characterName, animationName = 'idle') {
   try {
     console.log(`Animating character: ${characterName} with animation: ${animationName}`);
     
@@ -10,14 +10,15 @@ async function animateCharacter(scene, characterName, animationName) {
     const subtextureData = await loadSubtextureData(`assets/images/${characterName}/character.xml`);
     console.log(`Subtexture data for ${characterName}:`, subtextureData);
 
-    // Find subtextures for the animation
-    const animationFrames = Object.keys(subtextureData)
-      .filter(name => name.startsWith(animationName))
-      .map(name => subtextureData[name]);
-
-    if (animationFrames.length === 0) {
+    // Check if the animationName exists in the subtexture data
+    if (!subtextureData[`${characterName} ${animationName}0000`]) {
       throw new Error(`No frames found for animation: ${animationName}`);
     }
+
+    // Find subtextures for the animation
+    const animationFrames = Object.keys(subtextureData)
+      .filter(name => name.startsWith(`${characterName} ${animationName}`))
+      .map(name => subtextureData[name]);
 
     console.log(`Animation frames for ${animationName}:`, animationFrames);
 
@@ -33,6 +34,7 @@ async function animateCharacter(scene, characterName, animationName) {
     console.error('Error animating character:', error);
   }
 }
+
 
 function createSpriteManager(scene, characterName, capacity) {
   const imagePath = `assets/images/${characterName}/character.png`;
