@@ -1,10 +1,21 @@
-// game.js
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.getElementById('gameCanvas');
+  const engine = new BABYLON.Engine(canvas, true);
+  const scene = new BABYLON.Scene(engine);
 
-// Load character data from character.js
-initializeCharacter('rasazyV3', scene).then(() => {
-  console.log('Character initialized');
-  // Start the game loop
-  gameLoop(scene);
+  const camera = new BABYLON.ArcRotateCamera('camera', -Math.PI / 2, Math.PI / 3, 20, new BABYLON.Vector3(0, 0, 0), scene);
+  camera.attachControl(canvas, true);
+
+  const light = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
+
+  engine.runRenderLoop(() => {
+    scene.render();
+  });
+
+  initializeCharacter('rasazyV3', scene).then(() => {
+    console.log('Character initialized');
+    gameLoop(scene);
+  });
 });
 
 function gameLoop(scene) {

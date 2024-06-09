@@ -1,5 +1,3 @@
-// character.js
-
 function loadCharacterData(characterName) {
   const jsonFile = `assets/images/${characterName}/character.json`;
 
@@ -45,21 +43,17 @@ function initializeCharacter(characterName, scene) {
     loadCharacterData(characterName),
     loadCharacterAnimations(characterName)
   ]).then(() => {
-    // Create Babylon.js sprite manager
-    const spriteManager = new BABYLON.SpriteManager('spriteManager', `assets/images/${characterName}/${characterName}.png`, 1, 128, scene);
+    const spriteManager = new BABYLON.SpriteManager('spriteManager', `assets/images/${characterName}/character.png`, 1, 128, scene);
 
-    // Create sprites for each animation
     Object.keys(window.characterAnimations).forEach(animationName => {
       const animation = window.characterAnimations[animationName];
       const sprite = new BABYLON.Sprite(`${animationName}`, spriteManager);
       sprite.cellIndex = 0;
       sprite.position.x = animation.x;
       sprite.position.y = animation.y;
-      sprite.size = new BABYLON.Vector3(animation.width, animation.height, 1);
-      sprite.cellWidth = animation.frameWidth;
-      sprite.cellHeight = animation.frameHeight;
-      sprite.playAnimation(0, 1, true, 1000 / window.characterData.sing_duration);
-      sprite.isVisible = false; // Hide sprites initially
+      sprite.width = animation.width;
+      sprite.height = animation.height;
+      sprite.isVisible = false;
     });
   });
 }

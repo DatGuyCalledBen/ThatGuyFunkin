@@ -1,78 +1,53 @@
 {
-	"animations": [
-		{
-			"loop": false,
-			"offsets": [
-				0,
-				0
-			],
-			"anim": "singLEFT",
-			"fps": 26,
-			"name": "rasazyV3 left",
-			"indices": []
-		},
-		{
-			"offsets": [
-				0,
-				0
-			],
-			"loop": false,
-			"fps": 26,
-			"anim": "singRIGHT",
-			"indices": [],
-			"name": "rasazyV3 right"
-		},
-		{
-			"offsets": [
-				0,
-				0
-			],
-			"loop": false,
-			"fps": 26,
-			"anim": "singDOWN",
-			"indices": [],
-			"name": "rasazyV3 down"
-		},
-		{
-			"offsets": [
-				0,
-				0
-			],
-			"loop": false,
-			"fps": 26,
-			"anim": "singUP",
-			"indices": [],
-			"name": "rasazyV3 up"
-		},
-		{
-			"offsets": [
-				0,
-				0
-			],
-			"loop": false,
-			"fps": 25,
-			"anim": "idle",
-			"indices": [],
-			"name": "rasazyV3 idle"
-		}
-	],
-	"no_antialiasing": false,
-	"image": "characters/rasazyV3",
-	"position": [
-		-600,
-		-360
-	],
-	"healthicon": "rasazyv3",
-	"flip_x": false,
-	"healthbar_colors": [
-		169,
-		153,
-		179
-	],
-	"camera_position": [
-		300,
-		410
-	],
-	"sing_duration": 6.1,
-	"scale": 0.5
+    "animations": [
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singLEFT",
+            "fps": 26,
+            "name": "rasazyV3 left",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singRIGHT",
+            "fps": 26,
+            "name": "rasazyV3 right",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singDOWN",
+            "fps": 26,
+            "name": "rasazyV3 down",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singUP",
+            "fps": 26,
+            "name": "rasazyV3 up",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "idle",
+            "fps": 25,
+            "name": "rasazyV3 idle",
+            "indices": [0, 1, 2, 3, 4, 5]
+        }
+    ],
+    "no_antialiasing": false,
+    "image": "images/rasazyV3",
+    "position": [-600, -360],
+    "healthicon": "rasazyV3",
+    "flip_x": false,
+    "healthbar_colors": [169, 153, 179],
+    "camera_position": [300, 410],
+    "sing_duration": 6.1,
+    "scale": 0.5
 }
