@@ -42,9 +42,9 @@
         }
     ],
     "no_antialiasing": false,
-    "image": "images/rasazyV3",
+    "image": "rasazyV3/character",
     "position": [-600, -360],
-    "healthicon": "rasazyV3",
+    "healthicon": "rasazyV3/character-icon",
     "flip_x": false,
     "healthbar_colors": [169, 153, 179],
     "camera_position": [300, 410],

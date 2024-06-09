@@ -1,3 +1,5 @@
+import { loadCharacterData, loadCharacterAnimations } from './character.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   // Babylon.js scene setup
   const canvas = document.getElementById('gameCanvas');
@@ -16,68 +18,30 @@ document.addEventListener('DOMContentLoaded', () => {
     scene.render();
   });
 
-  // Load animations from JSON file and initialize character
-  loadAnimationData('assets/images/rasazyV3/character.json')
-    .then(animationData => {
-      window.characterData = animationData;
-      checkAnimationData(animationData);
-      return initializeCharacter('rasazyV3', scene);
-    })
-    .then(() => {
-      gameLoop(scene);
-
-      // Simulate user input for testing
-      setTimeout(() => {
-        triggerAnimation('singLEFT'); // Simulate left movement
-      }, 1000);
-
-      setTimeout(() => {
-        triggerAnimation('singRIGHT'); // Simulate right movement
-      }, 3000);
-
-      setTimeout(() => {
-        triggerAnimation('singUP'); // Simulate up movement
-      }, 5000);
-
-      setTimeout(() => {
-        triggerAnimation('singDOWN'); // Simulate down movement
-      }, 7000);
-
-      setTimeout(() => {
-        triggerAnimation('idle'); // Simulate idle state
-      }, 9000);
-    })
-    .catch(err => {
-      console.error('Error loading animation data or initializing character:', err);
-    });
+  // Load animations from JSON file and initialize character with self-healing mechanism
+  initializeCharacterWithSelfHealing('rasazyV3', scene);
 });
 
-function checkAnimationData(animationData) {
-  if (!animationData || !animationData.animations || !animationData.image) {
-    throw new Error('Invalid character animation data: Missing required fields');
-  }
+function initializeCharacterWithSelfHealing(characterName, scene) {
+  const jsonPath = `assets/images/${characterName}/character.json`;
 
-  // Check if animation data is an array
-  if (!Array.isArray(animationData.animations)) {
-    throw new Error('Invalid character animation data: Animations field must be an array');
-  }
+  // Function to load animation data with error handling
+  const loadAnimationDataWithRetry = () => {
+    loadAnimationData(jsonPath)
+      .then(animationData => {
+        window.characterData = animationData;
+        checkAnimationData(animationData);
+        return initializeCharacter(characterName, scene);
+      })
+      .catch(err => {
+        console.error('Error loading animation data:', err);
+        // Attempt to reload animation data after a delay
+        setTimeout(loadAnimationDataWithRetry, 5000); // Retry after 5 seconds
+      });
+  };
 
-  // Check each animation for required fields
-  animationData.animations.forEach(animation => {
-    if (!animation.name || !animation.indices || !animation.frameWidth || !animation.frameHeight) {
-      throw new Error('Invalid animation data: Missing required fields');
-    }
-
-    // Check if indices field is an array
-    if (!Array.isArray(animation.indices)) {
-      throw new Error('Invalid animation data: Indices field must be an array');
-    }
-  });
-
-  // Check other required fields
-  if (typeof animationData.image !== 'string') {
-    throw new Error('Invalid character animation data: Image field must be a string');
-  }
+  // Initial attempt to load animation data
+  loadAnimationDataWithRetry();
 }
 
 function loadAnimationData(jsonPath) {
@@ -106,23 +70,62 @@ function loadAnimationData(jsonPath) {
   });
 }
 
+function checkAnimationData(animationData) {
+  if (!animationData || !animationData.animations || !animationData.image) {
+    throw new Error('Invalid character animation data: Missing required fields');
+  }
+
+  // Check if animation data is an array
+  if (!Array.isArray(animationData.animations)) {
+    throw new Error('Invalid character animation data: Animations field must be an array');
+  }
+
+  // Check each animation for required fields
+  animationData.animations.forEach(animation => {
+    if (!animation.name || !animation.indices) {
+      throw new Error('Invalid animation data: Missing required fields');
+    }
+
+    // Check if indices field is an array
+    if (!Array.isArray(animation.indices)) {
+      throw new Error('Invalid animation data: Indices field must be an array');
+    }
+  });
+
+  // Check other required fields
+  if (typeof animationData.image !== 'string') {
+    throw new Error('Invalid character animation data: Image field must be a string');
+  }
+}
+
 function initializeCharacter(characterName, scene) {
   return Promise.all([
     loadCharacterData(characterName),
     loadCharacterAnimations(characterName)
   ]).then(([characterData, jsonData]) => {
-    if (!jsonData || !jsonData.animations || !jsonData.image) {
-      throw new Error('Invalid character animation data: Missing required fields');
+    // Check if jsonData is not null or undefined
+    if (!jsonData) {
+      throw new Error('Invalid character animation data: No data provided');
     }
-
-    // Check if animation data is an array
+    
+    // Check if jsonData.animations is an array
     if (!Array.isArray(jsonData.animations)) {
-      throw new Error('Invalid character animation data: Animations field must be an array');
+      throw new Error(`Invalid character animation data: Animations field must be an array. Found: ${jsonData.animations}`);
     }
-
-    // Check if the image path is a string
+    
+    // Check if jsonData.image is a string
     if (typeof jsonData.image !== 'string') {
-      throw new Error('Invalid character animation data: Image field must be a string');
+      throw new Error(`Invalid character animation data: Image field must be a string. Found: ${jsonData.image}`);
+    }
+    
+    // Check if characterData is not null or undefined
+    if (!characterData) {
+      throw new Error('Invalid character data: No data provided');
+    }
+    
+    // Check if characterData.sing_duration is a number
+    if (typeof characterData.sing_duration !== 'number') {
+      throw new Error(`Invalid character data: Sing duration must be a number. Found: ${characterData.sing_duration}`);
     }
 
     // Create Babylon.js sprite manager
@@ -137,7 +140,7 @@ function initializeCharacter(characterName, scene) {
 
       // Check if indices field is an array
       if (!Array.isArray(animation.indices)) {
-        throw new Error('Invalid animation data: Indices field must be an array');
+        throw new Error(`Invalid animation data: Indices field must be an array. Found: ${animation.indices}`);
       }
 
       animation.indices.forEach(index => {
@@ -162,6 +165,7 @@ function initializeCharacter(characterName, scene) {
     console.error('Error loading animation data or initializing character:', error);
   });
 }
+
 
 function triggerAnimation(animationName) {
   // Simulate key press for the specified animation

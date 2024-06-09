@@ -14,17 +14,40 @@ function loadCharacterData(characterName) {
     });
 }
 
+async function loadCharacterAnimations(characterName) {
+  try {
+    // Load subtexture data
+    const subtextureData = await loadSubtextureData(`assets/images/${characterName}/character.xml`);
+
+    // Filter subtextures for animations
+    const animationFrames = Object.keys(subtextureData)
+      .filter(name => name.startsWith(characterName))
+      .map(name => subtextureData[name]);
+
+    // Store animation frames in window object or wherever needed
+    window.characterAnimations = animationFrames;
+
+    console.log('Character animations loaded successfully:', window.characterAnimations);
+
+  } catch (error) {
+    console.error('Error loading character animations:', error);
+  }
+}
+
 async function initializeCharacter(characterName, scene) {
   try {
     await Promise.all([
       loadCharacterData(characterName),
-      loadSubtextureData(`assets/images/${characterName}/character.xml`)
+      loadCharacterAnimations(characterName)
     ]);
 
     animateCharacter(scene, characterName, 'idle');
+    
+    console.log('Character initialized successfully');
+
   } catch (error) {
     console.error('Error initializing character:', error);
   }
 }
 
-export { initializeCharacter };
+export { loadCharacterData, loadCharacterAnimations, initializeCharacter };

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     scene.render();
   });
 
-  initializeCharacter('rasazyV3', scene).then(() => {
+  initializeCharacterWithSelfHealing('rasazyV3', scene).then(() => {
     console.log('Character initialized');
     gameLoop(scene);
   });
