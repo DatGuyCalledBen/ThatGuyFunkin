@@ -1,5 +1,3 @@
-// animation.js
-
 import { loadSubtextureData } from './subtexture.js';
 
 async function animateCharacter(scene, characterName, animationName = 'idle') {
@@ -27,14 +25,16 @@ async function animateCharacter(scene, characterName, animationName = 'idle') {
     console.log('Sprite manager created:', spriteManager);
 
     // Create sprites and add animations
-    createSpritesAndAnimations(scene, spriteManager, animationFrames);
+    const sprite = createSpritesAndAnimations(scene, spriteManager, animationFrames);
     console.log('Sprites and animations created successfully');
+
+    return sprite;
 
   } catch (error) {
     console.error('Error animating character:', error);
+    throw error;
   }
 }
-
 
 function createSpriteManager(scene, characterName, capacity) {
   const imagePath = `assets/images/${characterName}/character.png`;
@@ -45,16 +45,17 @@ function createSpriteManager(scene, characterName, capacity) {
 function createSpritesAndAnimations(scene, spriteManager, animationFrames) {
   const animation = new BABYLON.AnimationGroup('animationGroup');
 
+  const sprite = new BABYLON.Sprite('characterSprite', spriteManager);
+  setupSprite(sprite, animationFrames[0]);
+
   animationFrames.forEach((frame, index) => {
-    const frameName = `Frame${index}`;
-    console.log(`Creating sprite for frame: ${frameName} with data:`, frame);
-    const sprite = new BABYLON.Sprite(frameName, spriteManager);
-    setupSprite(sprite, frame);
     setupAnimation(animation, sprite, frame, index);
   });
 
   animation.play(true);
   console.log('Animation group played:', animation);
+
+  return sprite;
 }
 
 function setupSprite(sprite, frame) {
@@ -102,4 +103,4 @@ function renderScore(scene) {
   console.log('Score rendered:', scoreText);
 }
 
-export { animateCharacter, renderHealthBarIcon, renderScore };
+export { animateCharacter, renderHealthBarIcon, renderScore, createSpritesAndAnimations };

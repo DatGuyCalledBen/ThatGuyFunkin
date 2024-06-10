@@ -1,4 +1,4 @@
-import { initializeCharacter } from './character.js';
+import { initializeCharacterMesh } from './character_mesh.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Babylon.js scene setup
@@ -14,33 +14,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const light = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
 
   // Load character and initialize animations
-  initializeCharacter('rasazyV3', scene)
-    .then(character => {
-      console.log('Character initialized successfully');
-      // Position the character on top of a platform
-      character.position.y = 2; // Adjust the height as needed
-      character.position.x = 8; // Adjust the position as needed
-      character.position.z = -3; // Adjust the position as needed
+  initializeCharacterMesh('rasazyV3', scene)
+    .then(sprite => {
+      console.log('Character mesh initialized successfully');
+
+      // Position the sprite on one of the stages
+      sprite.position = new BABYLON.Vector3(-5, 1.5, 5); // Adjust this as necessary
+
       // Trigger idle animation
-      triggerAnimation('idle', character, scene);
+      triggerAnimation('idle', sprite, scene);
     })
     .catch(error => {
-      console.error('Error initializing character:', error);
+      console.error('Error initializing character mesh:', error);
     });
 
   // Create platforms and stage polygons
   createEnvironment(scene);
-
-  // Load character icon texture
-  const characterIconTexture = new BABYLON.Texture('assets/images/rasazyV3/character-icon.png', scene);
-  characterIconTexture.hasAlpha = true;
-
-  // Create a sprite to represent the character icon
-  const characterIconSprite = new BABYLON.Sprite('characterIconSprite', characterIconTexture, scene);
-  characterIconSprite.size = 5; // Adjust the size as needed
-  characterIconSprite.position.y = 3; // Position the sprite above the platform
-  characterIconSprite.position.x = -5; // Adjust the position as needed
-  characterIconSprite.position.z = 5; // Adjust the position as needed
 
   // Run the game loop
   engine.runRenderLoop(() => {
@@ -48,12 +37,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function triggerAnimation(animationName, character, scene) {
+function triggerAnimation(animationName, sprite, scene) {
+  // Check if sprite or its animations property is undefined
+  if (!sprite || !sprite.animations) {
+    console.error('Character or animations not initialized.');
+    return;
+  }
+
   // Simulate key press for the specified animation
   console.log(`Triggering animation: ${animationName}`);
-  // Assuming this function can interact with the current game state to change animations
-  // You might need to set some global state or call a function that updates the animation
-  character.playAnimation(animationName); // Assuming there's a playAnimation method in your character class
+
+  // Find the animation with the matching name and play it
+  sprite.animations.forEach(animation => {
+    if (animation.name === animationName) {
+      animation.start(true, 1.0, animation.from, animation.to);
+    }
+  });
 }
 
 function createEnvironment(scene) {
