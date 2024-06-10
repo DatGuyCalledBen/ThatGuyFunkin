@@ -63,15 +63,19 @@ function setupSprite(sprite, frame) {
   sprite.cellIndex = 0;
   sprite.position.x = frame.x;
   sprite.position.y = frame.y;
-  sprite.size = new BABYLON.Vector3(frame.width, frame.height, 1);
-  sprite.cellWidth = frame.width;
-  sprite.cellHeight = frame.height;
+  // Adjust sprite width and height based on frameX and frameY values
+  const actualWidth = frame.width + frame.frameX;
+  const actualHeight = frame.height + frame.frameY;
+  sprite.size = new BABYLON.Vector3(actualWidth, actualHeight, 1);
+  sprite.cellWidth = actualWidth;
+  sprite.cellHeight = actualHeight;
   console.log('Sprite set up:', sprite);
 }
 
+
 function setupAnimation(animation, sprite, frame, index) {
   console.log(`Setting up animation for sprite at index: ${index} with frame data:`, frame);
-  const keyFrame = new BABYLON.Animation(`KeyFrame${index}`, 'position', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+  const keyFrame = new BABYLON.Animation(`KeyFrame${index}`, 'position', 25, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
   keyFrame.setKeys([{ frame: index, value: new BABYLON.Vector3(frame.frameX, frame.frameY, 0) }]);
   animation.addTargetedAnimation(keyFrame, sprite);
   console.log(`Key frame ${index} set up for animation:`, keyFrame);
