@@ -1,47 +1,68 @@
-import { loadSubtextureData } from './subtexture.js';
-import { createSpritesAndAnimations } from './animation.js';
+export function initializeCharacterMesh(characterName, scene) {
+    return new Promise((resolve, reject) => {
+        // Fetch and parse the subtexture data
+        fetch(`assets/images/${characterName}/character.xml`)
+            .then(response => response.text())
+            .then(xmlText => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                const subTextures = xmlDoc.getElementsByTagName('SubTexture');
+                const subTextureData = {};
 
-async function initializeCharacterMesh(characterName, scene) {
-  try {
-    console.log(`Initializing character mesh: ${characterName}`);
+                for (let i = 0; i < subTextures.length; i++) {
+                    const subTexture = subTextures[i];
+                    const name = subTexture.getAttribute('name');
+                    subTextureData[name] = {
+                        x: parseInt(subTexture.getAttribute('x')),
+                        y: parseInt(subTexture.getAttribute('y')),
+                        width: parseInt(subTexture.getAttribute('width')),
+                        height: parseInt(subTexture.getAttribute('height')),
+                        frameX: parseInt(subTexture.getAttribute('frameX')),
+                        frameY: parseInt(subTexture.getAttribute('frameY')),
+                        frameWidth: parseInt(subTexture.getAttribute('frameWidth')),
+                        frameHeight: parseInt(subTexture.getAttribute('frameHeight')),
+                    };
+                }
 
-    // Load subtexture data
-    const subtextureData = await loadSubtextureData(`assets/images/${characterName}/character.xml`);
-    console.log(`Subtexture data for ${characterName}:`, subtextureData);
+                console.log(`Subtexture data for ${characterName}:`, subTextureData);
 
-    // Check if the idle animation exists in the subtexture data
-    if (!subtextureData[`${characterName} idle0000`]) {
-      throw new Error(`No frames found for idle animation`);
-    }
+                const idleAnimationFrames = [
+                    subTextureData[`${characterName} idle0000`],
+                    subTextureData[`${characterName} idle0001`],
+                    subTextureData[`${characterName} idle0002`],
+                    subTextureData[`${characterName} idle0003`],
+                    subTextureData[`${characterName} idle0004`],
+                    subTextureData[`${characterName} idle0005`],
+                ];
 
-    // Find subtextures for the idle animation
-    const idleAnimationFrames = Object.keys(subtextureData)
-      .filter(name => name.startsWith(`${characterName} idle`))
-      .map(name => subtextureData[name]);
+                console.log(`Idle animation frames:`, idleAnimationFrames);
 
-    console.log(`Idle animation frames:`, idleAnimationFrames);
+                // Create a sprite manager
+                const spriteManager = new BABYLON.SpriteManager(
+                    `${characterName}Manager`,
+                    `assets/images/${characterName}/character.png`,
+                    6,
+                    1500,
+                    scene
+                );
 
-    // Create sprite manager for the character
-    const spriteManager = createSpriteManager(scene, characterName, idleAnimationFrames.length);
-    console.log('Sprite manager created:', spriteManager);
+                console.log('Sprite manager created:', spriteManager);
 
-    // Create sprites and add animations for the idle animation
-    const sprite = createSpritesAndAnimations(scene, spriteManager, idleAnimationFrames);
-    console.log('Idle animation sprites and animations created successfully');
+                // Initialize sprites and animations
+                idleAnimationFrames.forEach((frameData, index) => {
+                    const sprite = new BABYLON.Sprite(`idle${index}`, spriteManager);
+                    sprite.width = frameData.width / 150;
+                    sprite.height = frameData.height / 150;
+                    sprite.position = new BABYLON.Vector3(-5, 5, 5);
+                    sprite.isVisible = true;
 
-    // Return the sprite (assuming createSpritesAndAnimations returns the created sprite)
-    return sprite;
+                    console.log(`Setting up sprite with frame data:`, frameData);
+                });
 
-  } catch (error) {
-    console.error('Error initializing character mesh:', error);
-    throw error;
-  }
+                resolve(spriteManager);
+            })
+            .catch(error => {
+                reject(`Error fetching or parsing XML: ${error}`);
+            });
+    });
 }
-
-function createSpriteManager(scene, characterName, capacity) {
-  const imagePath = `assets/images/${characterName}/character.png`;
-  console.log(`Creating sprite manager with image path: ${imagePath} and capacity: ${capacity}`);
-  return new BABYLON.SpriteManager('spriteManager', imagePath, capacity, 128, scene);
-}
-
-export { initializeCharacterMesh };
