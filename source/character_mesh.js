@@ -41,7 +41,7 @@ export function initializeCharacterMesh(characterName, scene) {
                 const spriteManager = new BABYLON.SpriteManager(
                     `${characterName}Manager`,
                     `assets/images/${characterName}/character.png`,
-                    6,
+                    1,
                     1500,
                     scene
                 );

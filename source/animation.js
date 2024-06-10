@@ -75,8 +75,8 @@ function setupSprite(sprite, frame) {
 
 function setupAnimation(animation, sprite, frame, index) {
   console.log(`Setting up animation for sprite at index: ${index} with frame data:`, frame);
-  const keyFrame = new BABYLON.Animation(`KeyFrame${index}`, 'position', 25, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-  keyFrame.setKeys([{ frame: index, value: new BABYLON.Vector3(frame.frameX, frame.frameY, 0) }]);
+  const keyFrame = new BABYLON.Animation(`KeyFrame${index}`, 'position', 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+  keyFrame.setKeys([{ frame: index, value: new BABYLON.Vector3(frame.frameX, frame.frameY, 1) }]);
   animation.addTargetedAnimation(keyFrame, sprite);
   console.log(`Key frame ${index} set up for animation:`, keyFrame);
 }
