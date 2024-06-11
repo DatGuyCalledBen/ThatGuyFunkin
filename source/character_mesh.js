@@ -42,7 +42,7 @@ export function initializeCharacterMesh(characterName, scene) {
                     `${characterName}Manager`,
                     `assets/images/${characterName}/character.png`,
                     6,
-                    1500,
+                    { width: 750, height: 1500 },
                     scene
                 );
 
