@@ -1,0 +1,42 @@
+Hey, thanks for taking a look, let me know what you think on my twitter or linkedin (@DatGuyCalledBen or linkedin.com/benyaminshah/.
+
+==============================================================
+                   Adding Your Own Music
+==============================================================
+
+Integrating your custom music into ThatGuyFunkin is straightforward. Follow these steps to enhance your gaming experience:
+
+MP3 Integration
+----------------
+1. File Placement: Place your MP3 file in the /ThatGuyFunkin/ base folder.
+2. Specification: Specify the track in the index.html file. The engine will seamlessly detect and integrate your music without any additional configuration.
+
+Lipsyncing with JSON Files
+---------------------------
+Lipsyncing involves a more detailed process, offering opportunities for innovation within the field:
+
+- JSON Format: Utilize a .json file structured similarly to ninjamuffin99's Friday Night Funkin (FNF) data style. This file includes notes represented as an array with specific information (direction, time, duration).
+
+- Charting: While traditional manual charting involves coding each entry within a code editor, ThatGuyFunkin supports a simplified approach. Directly copy the data array into a standalone format enclosed in square brackets ([ [entry1], [entry2], [entry3] ]).
+
+MIDI Conversion and Character Movements
+----------------------------------------
+To synchronize character movements with music tones, convert your MP3 to MIDI format using any MP3 to MIDI converter. Here’s how it works:
+
+- Mapping Tones to Movements: Each MIDI note number (ranging from 0 to 127) corresponds to a specific character movement:
+  - Example: MIDI Note 60 (C4) correlates with character movement UP.
+
+- Implementation: Implement a mapping system where MIDI note numbers are converted into character movements based on their remainder when divided by 12. This method ensures accurate synchronization across different octaves.
+
+Generating JSON Files
+----------------------
+Automate the creation of .json files using a Python script or similar tool. This script processes the MIDI data, converting it into a parsable .json format suitable for charting use.
+
+Implementation Steps
+---------------------
+1. Convert to MIDI: Use an MP3 to MIDI converter to generate a MIDI file.
+2. Python Script: Develop or adapt a Python script to convert MIDI data into a .json file.
+3. Specify JSON File: Once generated, specify the .json file within the program configuration.
+4. Integration: Upload the .json file and launch ThatGuyFunkin to see your custom music integrated seamlessly into the gameplay environment.
+
+This approach empowers developers to innovate in creating intricate, synchronized worlds around their characters using dynamic 3D modeling environments within ThatGuyFunkin.

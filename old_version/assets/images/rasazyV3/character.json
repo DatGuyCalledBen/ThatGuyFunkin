@@ -1,0 +1,53 @@
+{
+    "animations": [
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singLEFT",
+            "fps": 26,
+            "name": "rasazyV3 left",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singRIGHT",
+            "fps": 26,
+            "name": "rasazyV3 right",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singDOWN",
+            "fps": 26,
+            "name": "rasazyV3 down",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "singUP",
+            "fps": 26,
+            "name": "rasazyV3 up",
+            "indices": [0, 1, 2, 3]
+        },
+        {
+            "loop": false,
+            "offsets": [0, 0],
+            "anim": "idle",
+            "fps": 25,
+            "name": "rasazyV3 idle",
+            "indices": [0, 1, 2, 3, 4, 5]
+        }
+    ],
+    "no_antialiasing": false,
+    "image": "rasazyV3/character",
+    "position": [-600, -360],
+    "healthicon": "rasazyV3/character-icon",
+    "flip_x": false,
+    "healthbar_colors": [169, 153, 179],
+    "camera_position": [300, 410],
+    "sing_duration": 6.1,
+    "scale": 0.5
+}
