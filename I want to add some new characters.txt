@@ -1,0 +1,175 @@
+Hey, thanks for taking a look, let me know what you think on my twitter or linkedin (@DatGuyCalledBen or linkedin.com/benyaminshah/
+
+============================================================
+Creating and Uploading Multiple Spritesheets for Each Animation in Adobe Animate
+============================================================
+
+1. **Creating the Animations:**
+
+   a. **Design and Animate:**
+      - Design and animate each character or object separately in Adobe Animate. Each animation will be exported as a separate spritesheet.
+
+   b. **Organize Layers:**
+      - Keep each animation element on a separate layer for clarity.
+
+   c. **Convert to Symbols:**
+      - Convert each animated element (characters, props) into symbols by selecting them and pressing F8. Symbols are essential for creating spritesheets.
+
+   d. **Adjust Registration Points:**
+      - Set the registration point (pivot point for rotation and scaling) for each symbol appropriately. This point affects how the sprite behaves in-game.
+
+2. **Exporting as Spritesheets and XML:**
+
+   a. **Prepare for Export:**
+      - Create a new symbol for each animation sequence that you want to export as a spritesheet.
+      - Arrange each symbol on the stage, leaving equal spacing between animations.
+
+   b. **Generate the Spritesheets:**
+      - Go to File > Export > Export Movie.
+      - In the Export Movie dialog, choose Sprite Sheet as the format.
+
+   c. **Configure Export Settings:**
+      - Specify the width and height of the spritesheet for the current animation.
+      - Choose PNG as the format for the spritesheet image.
+      - Select XML (or JSON) as the Data Format to generate a file describing the spritesheet layout and animations for the current animation.
+
+   d. **Choose the Output Location:**
+      - Set the folder where each spritesheet image and its corresponding XML file will be saved.
+
+   e. **Finalize Export:**
+      - Adjust additional settings in the Export Settings dialog if needed.
+      - Click Export to create each spritesheet and XML file based on your specified settings for the current animation.
+
+3. **Uploading to "/ThatGuyFunkin/" Environment:**
+
+   a. **Access Your Project:**
+      - Navigate to your "/ThatGuyFunkin/" project environment where you want to integrate the animations.
+
+   b. **Create Folder or Navigate:**
+      - Create a folder or navigate to the existing directory where spritesheets and XML files will be stored.
+
+   c. **Upload Files:**
+      - Upload the exported spritesheet image (PNG file) for each animation sequence into the appropriate folder.
+      - Upload the corresponding XML file that describes the spritesheet layout and animations into the same folder as the spritesheet.
+
+4. **Integration and Testing:**
+
+   - **Spritesheet Integration:**
+     - Update your game or application code to load and use the uploaded spritesheets and XML files for each animation sequence.
+
+     - **Step 1: Update SpriteSheet Data:**
+       - Ensure that your `spriteSheetData` array includes entries for each animation spritesheet. Each entry should specify the URL of the spritesheet file (`url`), the number of frames (`frames`), the width (`width`), and the height (`height`).
+
+       ```javascript
+       // Don't forget to add 750 to the WIDTH (it's the second to last parameter).
+       // Edit the number of frames to match the character's animation.
+       // You may need to double the HEIGHTS (it's the last parameter) to prevent stretching.
+       const spriteSheetData = [
+           new SpriteSheet("down_sprite_sheet.png", 4, 1305, 1068),
+           new SpriteSheet("right_sprite_sheet.png", 4, 1311, 1150),
+           new SpriteSheet("up_sprite_sheet.png", 4, 1221, 1216), 
+           new SpriteSheet("left_sprite_sheet.png", 4, 1195, 1100),
+           new SpriteSheet("idle.png", 1, 1283, 1106),
+           new SpriteSheet("idle_sprite_sheet.png", 10, 1283, 1106),
+       ];
+       ```
+
+     - **Step 2 (Optional): Create and Load Sprite Managers:**
+       - Implement functions like `createSpriteManager(data)` to dynamically create sprite managers based on the provided data.
+
+       ```javascript
+       function createSpriteManager(data) {
+           if (!data) {
+               return createDefaultSpriteManager(); // Fallback to default if data is missing
+           }
+           return new BABYLON.SpriteManager("spriteManager", data.url, data.frames, { width: data.width, height: data.height }, scene);
+       }
+       ```
+
+     - **Step 3 (Optional): Load Spritesheets Dynamically:**
+       - Use functions such as `loadSpriteSheet(data)` to load and instantiate spritesheets based on the selected sprite manager.
+
+       ```javascript
+       function loadSpriteSheet(data) {
+           spriteManager = createSpriteManager(data);
+           if (!spriteManager) {
+               throw new Error('Failed to create sprite manager');
+           }
+           sprite.dispose(); // Dispose the current sprite instance
+           sprite = new BABYLON.Sprite("sprite", spriteManager);
+           sprite.position = new BABYLON.Vector3(-1.1, 1.995, 1.1);
+           // the new character might float or clip into the floor, edit this if happens.
+           return Promise.resolve();
+       }
+       ```
+
+5. **XML File Integration:**
+
+   - **Ensure XML Usage:**
+     - Ensure that XML files, which describe the layout and animations of the spritesheets, are correctly used in your application.
+
+     - **Exporting XML Files:**
+       - When exporting spritesheets from Adobe Animate, ensure XML (or JSON) files are generated alongside. These files contain metadata like frame coordinates and animation sequences.
+
+     - **Loading XML Data:**
+       - Modify your game code to read and parse these XML files. This data is crucial for correctly rendering animations and managing sprite transitions.
+
+6. **Testing:**
+
+   - **Visual Verification:**
+     - Run your game or application to visually verify that each animation sequence loads and displays correctly using the specified spritesheets.
+
+   - **Functional Testing:**
+     - Test animations under various conditions (e.g., different screen resolutions, animation speeds) to ensure smooth transitions and correct rendering.
+
+   - **Performance Testing:**
+     - Evaluate the performance impact of loading and switching between spritesheets, especially in scenarios where multiple animations are active simultaneously.
+
+7. **Optimization and Refinement:**
+
+   - **Fine-tuning Parameters:**
+     - Adjust animation parameters (`animationSpeed`, `updateFrequency`) based on testing results to achieve optimal visual and performance outcomes.
+
+   - **Error Handling:**
+     - Implement robust error handling mechanisms to manage scenarios such as missing spritesheets or XML files, ensuring a graceful fallback or error message display.
+
+8. **Example Implementation:**
+
+   - **Game Environment Using Babylon.js:**
+     - Suppose your game environment uses Babylon.js. Update your code to load each spritesheet dynamically using functions (`createSpriteManager`, `loadSpriteSheet`) and ensure XML files are used for animation metadata.
+
+     ```javascript
+     // Example code snippet for Babylon.js integration
+     // (Assuming `spriteSheetData` and helper functions are defined)
+     const spriteSheetData = [
+         new SpriteSheet("down_sprite_sheet.png", 4, 1305, 1068),
+         new SpriteSheet("right_sprite_sheet.png", 4, 1311, 1150),
+         // Add entries for other animations
+     ];
+
+     let spriteManager = createSpriteManager(spriteSheetData[0]);
+     let sprite = new BABYLON.Sprite("sprite", spriteManager);
+     sprite.position = new BABYLON.Vector3(-1.1, 1.995, 1.1);
+
+     function createSpriteManager(data) {
+         if (!data) {
+             return createDefaultSpriteManager(); // Fallback to default if data is missing
+         }
+         return new BABYLON.SpriteManager("spriteManager", data.url, data.frames, { width: data.width, height: data.height }, scene);
+     }
+
+     function loadSpriteSheet(data) {
+         spriteManager = createSpriteManager(data);
+         if (!spriteManager) {
+             throw new Error('Failed to create sprite manager');
+         }
+         sprite.dispose(); // Dispose the current sprite instance
+         sprite = new BABYLON.Sprite("sprite", spriteManager);
+         sprite.position = new BABYLON.Vector3(-1.1, 1.995, 1.1);
+         return Promise.resolve();
+     }
+     ```
+
+============================================================
+
+Follow these steps to effectively integrate and test multiple spritesheets exported from Adobe Animate into your game or interactive project. Adjust and customize the process based on your specific development environment and requirements.
