@@ -1,0 +1,91 @@
+Hey, thanks for taking a look, let me know what you think on my twitter or linkedin (@DatGuyCalledBen or linkedin.com/benyaminshah/
+
+============================================================
+        Building Elaborate City Maps with Babylon.js
+============================================================
+
+1. Setting Up Your Urban Canvas:
+
+Begin by setting the stage for your 3D cityscape. Think of your scene as a blank canvas ready to be filled with buildings, streets, and lights.
+
+   scene.clearColor = new BABYLON.Color3(0.5, 0.7, 1.0); // Set a pleasant sky blue background
+
+2. Constructing the Cityscape:
+
+Start constructing your city using basic geometric shapes. For instance, create a grid of buildings to form the skyline:
+
+   // Create buildings in a grid pattern
+   const buildingSize = { width: 5, height: 10, depth: 5 };
+   const gridSize = 10;
+   
+   for (let x = -gridSize; x <= gridSize; x += 5) {
+       for (let z = -gridSize; z <= gridSize; z += 5) {
+           const building = BABYLON.MeshBuilder.CreateBox("building", buildingSize, scene);
+           building.position = new BABYLON.Vector3(x, buildingSize.height / 2, z);
+           building.material = new BABYLON.StandardMaterial("buildingMaterial", scene);
+           building.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random()); // Random color for each building
+       }
+   }
+
+3. Lighting Up the City:
+
+Illuminate your cityscape with various types of lights to create a realistic urban environment:
+
+   // Add ambient light to the scene
+   const ambientLight = new BABYLON.HemisphericLight("ambientLight", new BABYLON.Vector3(0, 1, 0), scene);
+   ambientLight.intensity = 0.5;
+
+   // Add street lights along the roads
+   const streetLight1 = new BABYLON.PointLight("streetLight1", new BABYLON.Vector3(0, 10, 20), scene);
+   streetLight1.intensity = 1.0;
+
+4. Creating Roads and Paths:
+
+Define roads and paths using simple shapes like boxes or planes to delineate streets and walkways:
+
+   // Create main roads
+   const road1 = BABYLON.MeshBuilder.CreateBox("road1", { width: 30, height: 0.1, depth: 5 }, scene);
+   road1.position = new BABYLON.Vector3(0, 0.05, 0);
+   road1.material = new BABYLON.StandardMaterial("roadMaterial", scene);
+   road1.material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Grey color for roads
+
+5. Adding Detail with Parks and Greenery:
+
+Integrate parks and green spaces using cylinders or spheres to represent trees and foliage:
+
+   // Add a park with trees
+   const park = BABYLON.MeshBuilder.CreateBox("park", { width: 20, height: 0.1, depth: 20 }, scene);
+   park.position = new BABYLON.Vector3(15, 0.05, -15);
+   park.material = new BABYLON.StandardMaterial("parkMaterial", scene);
+   park.material.diffuseColor = new BABYLON.Color3(0.2, 0.8, 0.2); // Green color for parks
+
+   const tree1 = BABYLON.MeshBuilder.CreateCylinder("tree1", { diameterTop: 1, diameterBottom: 1, height: 5 }, scene);
+   tree1.position = new BABYLON.Vector3(17, 2.5, -17);
+   tree1.material = new BABYLON.StandardMaterial("treeMaterial", scene);
+   tree1.material.diffuseColor = new BABYLON.Color3(0.3, 0.2, 0.1); // Brown color for tree trunks
+
+6. Animating Your Cityscape:
+
+Bring your city to life with animations. For example, simulate traffic or moving clouds using Babylon.js animation tools:
+
+   // Animation example: Move a car along a road
+   const car = BABYLON.MeshBuilder.CreateBox("car", { width: 2, height: 1, depth: 1 }, scene);
+   car.position = new BABYLON.Vector3(-15, 0.5, 0);
+   car.material = new BABYLON.StandardMaterial("carMaterial", scene);
+   car.material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red color for cars
+
+   const carAnimation = new BABYLON.Animation("carAnimation", "position.x", 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+   const keys = [{ frame: 0, value: -15 }, { frame: 100, value: 15 }];
+   carAnimation.setKeys(keys);
+   car.animations = [carAnimation];
+   scene.beginAnimation(car, 0, 100, true);
+
+7. Final Touches and Interactivity:
+
+Customize your scene further with additional details, effects, and interactive elements. This might include adding more buildings, adjusting lighting for day and night cycles, or implementing user interaction through mouse controls or VR devices.
+
+---
+
+This guide outlines the basic steps to create a detailed cityscape using Babylon.js, focusing on simplicity and scale. Experiment with different shapes, colors, and animations to build unique urban landscapes tailored to your imagination. Happy city building!
+
+============================================================

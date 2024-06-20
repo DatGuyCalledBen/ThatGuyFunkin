@@ -198,17 +198,17 @@ export function createScene(engine, canvas) {
 
         // Handle panPath for tracking shots
         if (nextPosition.panPath) {
-            panCameraAlongPath(nextPosition.panPath);
+            // panCameraAlongPath(nextPosition.panPath);
         }
 
         // Handle dollyPath for dolly shots
         if (nextPosition.dollyPath) {
-            panCameraAlongPath(nextPosition.dollyPath);
+            // panCameraAlongPath(nextPosition.dollyPath);
         }
 
         // Handle truckPath for truck shots
         if (nextPosition.truckPath) {
-            panCameraAlongPath(nextPosition.truckPath);
+            // panCameraAlongPath(nextPosition.truckPath);
         }
     } else {
         console.error('Next camera position is missing required properties (alpha, beta, radius).');
