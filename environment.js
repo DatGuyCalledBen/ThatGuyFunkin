@@ -129,7 +129,7 @@ export function createScene(engine, canvas) {
     { alpha: 0, beta: Math.PI / 4, radius: 20, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 20, 5 + i / 36, Math.sin(i * Math.PI / 180) * 20)) }, // Dynamic Spiral
     { alpha: 0, beta: Math.PI / 4, radius: 60, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 60, 5, Math.sin(i * Math.PI / 180) * 60)) }, // Time-lapse Orbit
     { alpha: 0, beta: Math.PI / 2, radius: 50, zoomPath: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1] }, // Slow Zoom In/Out
-    { alpha: 0, beta: Math.PI / 4, radius: 10, target: box.position }, // Tracking Shot Following an Object
+    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 5, 1.25) }, // Tracking Shot Following an Object
     { alpha: 0, beta: Math.PI / 4, radius: 2, position: new BABYLON.Vector3(-3, 2, 3) }, // Interior View (First-Person Perspective)
     { alpha: Math.PI, beta: Math.PI / 4, radius: 10, position: new BABYLON.Vector3(0, 1, 0) }, // Reflection Shot
     { alpha: 0, beta: Math.PI / 2, radius: 50, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 50, 10, Math.sin(i * Math.PI / 180) * 50)) }, // 360-Degree Panoramic View
