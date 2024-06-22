@@ -23,12 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
 // also edit the number of frames to match the number the character has
 // also you need to double the heights to prevent stretching
     const spriteSheetData = [
-        new SpriteSheet("down_sprite_sheet.png", 4, 1305, 1068),
-        new SpriteSheet("right_sprite_sheet.png", 4, 1311, 1150),
-        new SpriteSheet("up_sprite_sheet.png", 4, 1221, 1216), 
-        new SpriteSheet("left_sprite_sheet.png", 4, 1195, 1100),
-        new SpriteSheet("idle.png", 1, 1283, 1106),
-        new SpriteSheet("idle_sprite_sheet.png", 10, 1283, 1106),
+        new SpriteSheet("down_sprite_sheet.png", 3, 1000, 1000),
+        new SpriteSheet("right_sprite_sheet.png", 3, 1000, 1000),
+        new SpriteSheet("up_sprite_sheet.png", 3, 1000, 1000), 
+        new SpriteSheet("left_sprite_sheet.png", 3, 1000, 1000),
+        new SpriteSheet("idle.png", 1, 618, 857),
+        new SpriteSheet("up_sprite_sheet.png", 3, 1000, 1000),
     ];
 
     let currentSpriteSheetIndex = 5;
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let spriteManager = createSpriteManager(spriteSheetData[currentSpriteSheetIndex]);
     let sprite = new BABYLON.Sprite("sprite", spriteManager);
-    sprite.position = new BABYLON.Vector3(-1.1, 1.995, 1.1);
+    sprite.position = new BABYLON.Vector3(-1.1, 2.35, 1.1);
 // the new character might float or clip into the floor, edit this if happens.
     let defaultSpriteManager = createDefaultSpriteManager();
     let defaultSprite = new BABYLON.Sprite("defaultSprite", defaultSpriteManager);
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const audio = document.getElementById("backgroundMusic");
     let danceData;
 
-    fetch('high-contrast-x-sammy-virji-if-we-ever-qlank-flip-x-shella-verse-tmp-mashup-scdler [vocals]_0.2.json')
+    fetch('the-mmorpg-addict-39-s-anthem-ーネトゲ廃人シュプレヒコールー-scdler-vocals.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createDefaultSpriteManager() {
         try {
-            return new BABYLON.SpriteManager("defaultSpriteManager", "idle.png", 1, { width: 1283, height: 1106 }, scene);  // don't forget to edit here.
+            return new BABYLON.SpriteManager("defaultSpriteManager", "idle.png", 1, { width: 618, height: 587 }, scene);  // don't forget to edit here.
         } catch (error) {
             console.error('Error creating default sprite manager:', error);
             return null;
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             sprite.dispose(); // Dispose the current sprite instance
             sprite = new BABYLON.Sprite("sprite", spriteManager);
-            sprite.position = new BABYLON.Vector3(-1.1, 1.995, 1.1);
+            sprite.position = new BABYLON.Vector3(-1.1, 2.35, 1.1);
             // the new character might float or clip into the floor, edit this if happens.
             return Promise.resolve();
         } catch (error) {
