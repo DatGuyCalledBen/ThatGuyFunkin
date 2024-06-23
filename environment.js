@@ -129,7 +129,7 @@ export function createScene(engine, canvas) {
     { alpha: 0, beta: Math.PI / 4, radius: 20, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 20, 5 + i / 36, Math.sin(i * Math.PI / 180) * 20)) }, // Dynamic Spiral
     { alpha: 0, beta: Math.PI / 4, radius: 60, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 60, 5, Math.sin(i * Math.PI / 180) * 60)) }, // Time-lapse Orbit
     { alpha: 0, beta: Math.PI / 2, radius: 50, zoomPath: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1] }, // Slow Zoom In/Out
-    { alpha: 0, beta: Math.PI / 4, radius: 10, target: box.position }, // Tracking Shot Following an Object
+    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 5, 1.25) }, // Tracking Shot Following an Object
     { alpha: 0, beta: Math.PI / 4, radius: 2, position: new BABYLON.Vector3(-3, 2, 3) }, // Interior View (First-Person Perspective)
     { alpha: Math.PI, beta: Math.PI / 4, radius: 10, position: new BABYLON.Vector3(0, 1, 0) }, // Reflection Shot
     { alpha: 0, beta: Math.PI / 2, radius: 50, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 50, 10, Math.sin(i * Math.PI / 180) * 50)) }, // 360-Degree Panoramic View
@@ -198,17 +198,17 @@ export function createScene(engine, canvas) {
 
         // Handle panPath for tracking shots
         if (nextPosition.panPath) {
-            // panCameraAlongPath(nextPosition.panPath);
+            panCameraAlongPath(nextPosition.panPath);
         }
 
         // Handle dollyPath for dolly shots
         if (nextPosition.dollyPath) {
-            // panCameraAlongPath(nextPosition.dollyPath);
+            panCameraAlongPath(nextPosition.dollyPath);
         }
 
         // Handle truckPath for truck shots
         if (nextPosition.truckPath) {
-            // panCameraAlongPath(nextPosition.truckPath);
+            panCameraAlongPath(nextPosition.truckPath);
         }
     } else {
         console.error('Next camera position is missing required properties (alpha, beta, radius).');
@@ -217,31 +217,43 @@ export function createScene(engine, canvas) {
 
 
     // Function to continuously pan the camera
-    function panCamera(camera) {
-        const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        animation.setKeys([
-            { frame: 0, value: camera.alpha },
-            { frame: 6000, value: camera.alpha + Math.PI / 2 }
-        ]);
-    
-        camera.animations.push(animation);
-        scene.beginAnimation(camera, 0, 6000, true);
+    function panCamera() {
+    const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    animation.setKeys([
+        { frame: 0, value: camera.alpha },
+        { frame: 6000, value: camera.alpha + Math.PI / 2 }
+    ]);
+
+    camera.animations.push(animation);
+    scene.beginAnimation(camera, 0, 6000, true);
     }
-    
+
+    // Function to continuously zoom the camera
+    function zoomCamera() {
+    const animation = new BABYLON.Animation("cameraZoomAnimation", "radius", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    animation.setKeys([
+        { frame: 0, value: camera.radius },
+        { frame: 6000, value: camera.radius - 5 }
+    ]);
+
+    camera.animations.push(animation);
+    scene.beginAnimation(camera, 0, 6000, true);
+    }
+
     // Function to continuously rotate the camera
-    function rotateCamera(camera) {
-        const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        animation.setKeys([
-            { frame: 0, value: camera.beta },
-            { frame: 6000, value: camera.beta + Math.PI / 8 }
-        ]);
-    
-        camera.animations.push(animation);
-        scene.beginAnimation(camera, 0, 6000, true);
+    function rotateCamera() {
+    const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    animation.setKeys([
+        { frame: 0, value: camera.beta },
+        { frame: 6000, value: camera.beta + Math.PI / 8 }
+    ]);
+
+    camera.animations.push(animation);
+    scene.beginAnimation(camera, 0, 6000, true);
     }
-    
+
     // Function to pan camera along a specific path
-    function panCameraAlongPath(camera, path) {
+    function panCameraAlongPath(path) {
         let pathAnimation = new BABYLON.Animation("cameraPanPathAnimation", "position", 60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         let keys = [];
         for (let i = 0; i < path.length; i++) {
@@ -251,110 +263,40 @@ export function createScene(engine, canvas) {
         camera.animations.push(pathAnimation);
         scene.beginAnimation(camera, 0, 6000, true);
     }
-    
+
     // Helper function to get a random integer between min (inclusive) and max (exclusive)
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     }
-    
+
     // Start initial camera movement
-    panCamera(camera);
-    rotateCamera(camera);
+    panCamera();
+    zoomCamera();
+    rotateCamera();
     
-    // Function to apply zoom to fixed cameras
-    function applyZoomToFixedCamera(camera) {
-        const zoomAnimation = new BABYLON.Animation("fixedCameraZoomAnimation",     "radius", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        zoomAnimation.setKeys([
-            { frame: 0, value: camera.radius },
-            { frame: 6000, value: camera.radius - 5 }
-        ]);
-        camera.animations.push(zoomAnimation);
-        scene.beginAnimation(camera, 0, 6000, true);
-    }
     
-    // Function to apply camera shake
-    function applyCameraShake(camera, intensity = 0.1, frequency = 30) {
-        const shakeAnimation = new BABYLON.Animation("cameraShakeAnimation", "position", frequency, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-        const keys = [];
-        for (let i = 0; i <= 6000; i += frequency) {
-            keys.push({
-                frame: i,
-                value: new BABYLON.Vector3(
-                    camera.position.x + (Math.random() - 0.5) * intensity,
-                    camera.position.y + (Math.random() - 0.5) * intensity,
-                    camera.position.z + (Math.random() - 0.5) * intensity
-                )
-            });
-        }
-        shakeAnimation.setKeys(keys);
-        camera.animations.push(shakeAnimation);
-        scene.beginAnimation(camera, 0, 6000, true);
-    }
-    
-    // Function to transition between cameras
-    function transitionToCamera(camera) {
-        scene.activeCamera = camera;
-        scene.activeCamera.attachControl(canvas, true);
-    }
-    
-    let transitionTime1 = 60 / (2 * BPM * QuantisationFactor); // Transition time in seconds
-    setInterval(() => {
-        const cameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
-        const randomCamera = cameras[getRandomInt(0, cameras.length)];
-        transitionToCamera(randomCamera);
-    }, transitionTime1 * 1000);
+    // Start the camera transitions
+    setInterval(transitionToNextCamera, transitionTime * 1000);
     
     // Fixed Position Cameras
     const fixedCamera1 = new BABYLON.FreeCamera("fixedCamera1", new BABYLON.Vector3(-5, 5.5, -5), scene);
     fixedCamera1.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera1
-    applyCameraShake(fixedCamera1);
-    
+
     const fixedCamera2 = new BABYLON.FreeCamera("fixedCamera2", new BABYLON.Vector3(5, 0.5, -5), scene);
     fixedCamera2.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera2
-    applyCameraShake(fixedCamera2);
     
     // Additional fixed position cameras
+
     const fixedCamera3 = new BABYLON.FreeCamera("fixedCamera3", new BABYLON.Vector3(5, 2.5, 5), scene);
     fixedCamera3.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera3
-    applyCameraShake(fixedCamera3);
-    
+
     const fixedCamera4 = new BABYLON.FreeCamera("fixedCamera4", new BABYLON.Vector3(-5, 5.5, 5), scene);
     fixedCamera4.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera4
-    applyCameraShake(fixedCamera4);
-    
+
     const fixedCamera5 = new BABYLON.FreeCamera("fixedCamera5", new BABYLON.Vector3(0, 0.5, -5), scene);
     fixedCamera5.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera5
-    applyCameraShake(fixedCamera5);
-    
-    // Color Grading and Effects
-    scene.imageProcessingConfiguration.contrast = 1.6;
-    scene.imageProcessingConfiguration.exposure = 1.4;
-    
-    // Depth of Field (DoF)
-    const dof = new BABYLON.DepthOfFieldEffect(scene, fixedCamera1, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
-    const dof2 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera2, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
-    const dof3 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera3, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
-    const dof4 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera4, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
-    const dof5 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera5, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
-    
-    // Lighting Effects
-    var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
-    spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
-    spotlight.specular = new BABYLON.Color3(1, 1, 1);
-    
-    // Slow Motion and Time Effects
-    scene.animationGroups.forEach(group => {
-        group.speedRatio = 0.5; // Slow motion
-    });
-    
-    // Post-processing Effects
-    var pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5]);
-    pipeline.bloomEnabled = true;
-    pipeline.bloomThreshold = 0.1;
-    pipeline.bloomWeight = 0.8;
-    pipeline.bloomKernel = 64;
-    pipeline.bloomScale = 0.5;
-    
+
+
     // Switch between theatrical and fixed cameras periodically
     let useTheatricalCamera = true;
     let switchInterval = (60/(BPM*QuantisationFactor)); // Switch cameras every 10ish seconds
