@@ -23,12 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
 // also edit the number of frames to match the number the character has
 // also you need to double the heights to prevent stretching
     const spriteSheetData = [
-        new SpriteSheet("down_sprite_sheet.png", 4, 1305, 1068),
-        new SpriteSheet("right_sprite_sheet.png", 4, 1311, 1150),
-        new SpriteSheet("up_sprite_sheet.png", 4, 1221, 1216), 
-        new SpriteSheet("left_sprite_sheet.png", 4, 1195, 1100),
-        new SpriteSheet("idle.png", 1, 1283, 1106),
-        new SpriteSheet("idle_sprite_sheet.png", 10, 1283, 1106),
+        new SpriteSheet("Active Sprites/down_sprite_sheet.png", 4, 1305, 1068),
+        new SpriteSheet("Active Sprites/right_sprite_sheet.png", 4, 1311, 1150),
+        new SpriteSheet("Active Sprites/up_sprite_sheet.png", 4, 1221, 1216), 
+        new SpriteSheet("Active Sprites/left_sprite_sheet.png", 4, 1195, 1100),
+        new SpriteSheet("Active Sprites/idle.png", 1, 1283, 1106),
+        new SpriteSheet("Active Sprites/idle_sprite_sheet.png", 10, 1283, 1106),
     ];
 
     let currentSpriteSheetIndex = 5;
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const audio = document.getElementById("backgroundMusic");
     let danceData;
 
-    fetch('high-contrast-x-sammy-virji-if-we-ever-qlank-flip-x-shella-verse-tmp-mashup-scdler [vocals]_0.2.json')
+    fetch('Music & JSON Files/high-contrast-x-sammy-virji-if-we-ever-qlank-flip-x-shella-verse-tmp-mashup-scdler [vocals]_0.2.json')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function createDefaultSpriteManager() {
         try {
-            return new BABYLON.SpriteManager("defaultSpriteManager", "idle.png", 1, { width: 1283, height: 1106 }, scene);  // don't forget to edit here.
+            return new BABYLON.SpriteManager("defaultSpriteManager", "Active Sprites/idle.png", 1, { width: 1283, height: 1106 }, scene);  // don't forget to edit here.
         } catch (error) {
             console.error('Error creating default sprite manager:', error);
             return null;
