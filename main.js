@@ -3611,7 +3611,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const vocalist = groupKeys[Math.floor(seededRandom(seed) * groupKeys.length)];
     
-    const animationSpeed = 1/128;
+    const animationSpeed = (BPM/60)/32;
 
     function spriteGetter1() {
     try {
