@@ -1,9 +1,83 @@
 export function createScene(engine, canvas) {
+    
     const scene = new BABYLON.Scene(engine);
-    const BPM = 70
-    const QuantisationFactor = 1/16000
+    const BPM = window.audioBPM
+    const QuantisationFactor = 1/4000
     // Default background color
     scene.clearColor = new BABYLON.Color3(0, 0, 0);
+    
+    // Create the plane
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
+    
+    // Create the dynamic texture
+    var dynamicTexture = new BABYLON.DynamicTexture("dynamicTexture", { width: 512, height: 128 }, scene);
+    
+    // Get the texture context
+    var textureContext = dynamicTexture.getContext();
+    
+    // Set the initial text
+    var initialText = window.audioFileName;
+    textureContext.fillStyle = "white";
+    textureContext.font = "36px Arial";
+    textureContext.fillText(initialText, 40, 40);
+    
+    // Update the dynamic texture to reflect changes
+    dynamicTexture.update();
+    
+    // Apply the dynamic texture to the plane
+    var planeMaterial = new BABYLON.StandardMaterial("planeMaterial", scene);
+    planeMaterial.diffuseTexture = dynamicTexture;
+    plane.material = planeMaterial;
+    
+    // Position and orient the plane
+    plane.position = new BABYLON.Vector3(-4.5, 5, 1.9);
+    plane.rotation = new BABYLON.Vector3(0, 0, 0);
+    
+    function createBuilding(scene, name, width, height, depth, position, color)     {
+        const building = BABYLON.MeshBuilder.CreateBox(name, { width: width,     height: height, depth: depth }, scene);
+        building.position = position;
+        const buildingMaterial = new BABYLON.StandardMaterial(name + "Material",     scene);
+        buildingMaterial.diffuseColor = color;
+        building.material = buildingMaterial;
+        return building;
+    }
+    
+     function createNeighborhood(scene, rows, cols, spacing, parkSize, roadWidth)     {
+        const buildings = [];
+        const halfRows = Math.floor(rows / 2);
+        const halfCols = Math.floor(cols / 2);
+        const halfParkSize = Math.floor(parkSize / 2);
+    
+        for (let i = -halfRows; i <= halfRows; i++) {
+            for (let j = -halfCols; j <= halfCols; j++) {
+                // Skip buildings in the park area
+                if (Math.abs(i) <= halfParkSize && Math.abs(j) <= halfParkSize)     {
+                    continue;
+                }
+    
+                // Skip buildings in the adjacent road area
+                if ((Math.abs(i) <= halfParkSize + roadWidth && Math.abs(j) >     halfParkSize && Math.abs(j) <= halfParkSize + roadWidth)     ||
+                    (Math.abs(j) <= halfParkSize + roadWidth && Math.abs(i) >     halfParkSize && Math.abs(i) <= halfParkSize +     roadWidth)) {
+                    continue;
+                }
+    
+                const w = (Math.random() * 10) + 5;
+                const h = (Math.random() * 50);
+                const d = (Math.random() * 10) + 5;
+                const x = i * spacing;
+                const z = j * spacing;
+                const position = new BABYLON.Vector3(x, h / 2, z);
+                const color = new BABYLON.Color3(Math.random() * 0.5, Math    .random() * 0.5, Math.random() * 0.5);
+                const building = createBuilding(scene, `building_${i}_${j}`, w,     h, d, position, color);
+                buildings.push(building);
+            }
+        }
+    
+        return buildings;
+    }
+    
+    // Create a neighborhood with 20 rows, 20 columns, 20 units of spacing     between buildings, a 5x5 park area, and 5 units of road width
+    createNeighborhood(scene, 20, 20, 20, 5, 5);
 
     // Add simple geometric buildings
     const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
@@ -12,8 +86,8 @@ export function createScene(engine, canvas) {
     building1Material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Dark grey
     building1.material = building1Material;
     
-    const building2 = BABYLON.MeshBuilder.CreateBox("building2", { width: 8, height: 15, depth: 8 }, scene);
-    building2.position = new BABYLON.Vector3(9, 7.5, -8); // Position building
+    const building2 = BABYLON.MeshBuilder.CreateBox("building2", { width: 8, height: 10, depth: 8 }, scene);
+    building2.position = new BABYLON.Vector3(9, 5, -8); // Position building
     const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
     building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
     building2.material = building2Material;
@@ -83,16 +157,16 @@ export function createScene(engine, canvas) {
     }
 
     // Main camera setup
-    const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 4, 50, new BABYLON.Vector3(-1.25, 2.5, 1.25), scene);
+    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 60, new BABYLON.Vector3(-1, 2.5, 1), scene);
     camera.attachControl(canvas, true);
     
     // Define camera positions
     const cameraPositions = [
     // Theatrical angles
-    { alpha: -Math.PI / 2, beta: Math.PI / 3, radius: 60 },
-    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: 80 },
-    { alpha: -Math.PI / 3, beta: Math.PI / 3, radius: 50 },
-    { alpha: -Math.PI / 4, beta: Math.PI / 4, radius: 70 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 3, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 3, beta: Math.PI / 3, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 4, beta: Math.PI / 4, radius: getRandomInt(5,25) },
     // Close-ups on the cube
     { alpha: 0, beta: Math.PI / 2, radius: 3 },
     { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 3 },
@@ -106,16 +180,16 @@ export function createScene(engine, canvas) {
     // Perched on the cone
     { alpha: Math.PI / 4, beta: Math.PI / 4, radius: 7, position: new BABYLON.Vector3(-3, 3, -3) },
     // Dutch angle
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 50, rotationOffset: Math.PI / 6 },
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 50, rotationOffset: -Math.PI / 6 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: Math.PI / 6 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: -Math.PI / 6 },
     // Tracking shot
-    { alpha: 0, beta: Math.PI / 4, radius: 50, panPath: [new BABYLON.Vector3(0, 6, -12.5), new BABYLON.Vector3(0, 6, 2.5)] },
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [new BABYLON.Vector3(0, 6, -12.5), new BABYLON.Vector3(0, 6, 2.5)] },
     // Over-the-shoulder
-    { alpha: -Math.PI / 3, beta: Math.PI / 4, radius: 10, target: box.position },
+    { alpha: -Math.PI / 3, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
     // Low angle looking up at the box
-    { alpha: Math.PI / 6, beta: 3 * Math.PI / 4, radius: 5, target: box.position },
+    { alpha: Math.PI / 6, beta: 3 * Math.PI / 4, radius: 5, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
     // High angle looking down at the box
-    { alpha: Math.PI / 3, beta: Math.PI / 6, radius: 8, target: box.position },
+    { alpha: Math.PI / 3, beta: Math.PI / 6, radius: 8, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
     // Zoom shots
     { alpha: 0, beta: Math.PI / 2, radius: 1.5 },
     { alpha: Math.PI, beta: Math.PI / 2, radius: 1.5 },
@@ -124,19 +198,19 @@ export function createScene(engine, canvas) {
     // Truck shot
     { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10, truckPath: [new BABYLON.Vector3(-2, 2.5, -10), new BABYLON.Vector3(-2, 2.5, 10)] },
     // New camera positions
-    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 100 }, // Overhead Shot
+    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 10 }, // Overhead Shot
     { alpha: 0, beta: Math.PI / 6, radius: 5 }, // Worm's Eye View
-    { alpha: 0, beta: Math.PI / 4, radius: 20, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 20, 5 + i / 36, Math.sin(i * Math.PI / 180) * 20)) }, // Dynamic Spiral
-    { alpha: 0, beta: Math.PI / 4, radius: 60, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 60, 5, Math.sin(i * Math.PI / 180) * 60)) }, // Time-lapse Orbit
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 20, 5 + i / 36, Math.sin((i * Math.PI / 180) + 90) * 20)) }, // Dynamic Spiral
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 60, 5, Math.sin((i * Math.PI / 180) + 90) * 60)) }, // Time-lapse Orbit
     { alpha: 0, beta: Math.PI / 2, radius: 50, zoomPath: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1] }, // Slow Zoom In/Out
-    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 5, 1.25) }, // Tracking Shot Following an Object
+    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) }, // Tracking Shot Following an Object
     { alpha: 0, beta: Math.PI / 4, radius: 2, position: new BABYLON.Vector3(-3, 2, 3) }, // Interior View (First-Person Perspective)
     { alpha: Math.PI, beta: Math.PI / 4, radius: 10, position: new BABYLON.Vector3(0, 1, 0) }, // Reflection Shot
-    { alpha: 0, beta: Math.PI / 2, radius: 50, panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos(i * Math.PI / 180) * 50, 10, Math.sin(i * Math.PI / 180) * 50)) }, // 360-Degree Panoramic View
+    { alpha: 0, beta: Math.PI / 2, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 50, 10, Math.sin((i * Math.PI / 180) + 90) * 50)) }, // 360-Degree Panoramic View
     ];
 
     let currentCameraIndex = 0;
-    let transitionTime = 60 / (3 * BPM * QuantisationFactor); // Transition time in milliseconds
+    let transitionTime = (60*3 / (BPM * QuantisationFactor)); // Transition time in milliseconds
     
     // Function to smoothly transition between camera positions
     function transitionToNextCamera() {
@@ -175,9 +249,9 @@ export function createScene(engine, canvas) {
             currentCameraIndex = useTheatricalCamera ? nextCameraIndex : currentCameraIndex;
             };
 
-            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'alpha', 60, 120, camera.alpha, nextPosition.alpha, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'beta', 60, 120, camera.beta, nextPosition.beta, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'radius', 60, 120, camera.radius, nextPosition.radius, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, animationCallback);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'alpha', getRandomInt(30,90), 1200, camera.alpha, nextPosition.alpha, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'beta', getRandomInt(150,450), 1200, camera.beta, nextPosition.beta, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'radius', getRandomInt(45,135), 1200, camera.radius, nextPosition.radius, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, animationCallback);
 
         // Handle specific target for looking up angles or other customized targets
         if (nextPosition.target) {
@@ -198,17 +272,17 @@ export function createScene(engine, canvas) {
 
         // Handle panPath for tracking shots
         if (nextPosition.panPath) {
-            panCameraAlongPath(nextPosition.panPath);
+            // panCameraAlongPath(nextPosition.panPath);
         }
 
         // Handle dollyPath for dolly shots
         if (nextPosition.dollyPath) {
-            panCameraAlongPath(nextPosition.dollyPath);
+            // panCameraAlongPath(nextPosition.dollyPath);
         }
 
         // Handle truckPath for truck shots
         if (nextPosition.truckPath) {
-            panCameraAlongPath(nextPosition.truckPath);
+            // panCameraAlongPath(nextPosition.truckPath);
         }
     } else {
         console.error('Next camera position is missing required properties (alpha, beta, radius).');
@@ -217,94 +291,157 @@ export function createScene(engine, canvas) {
 
 
     // Function to continuously pan the camera
-    function panCamera() {
-    const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-    animation.setKeys([
-        { frame: 0, value: camera.alpha },
-        { frame: 6000, value: camera.alpha + Math.PI / 2 }
-    ]);
-
-    camera.animations.push(animation);
-    scene.beginAnimation(camera, 0, 6000, true);
+    function panCamera(camera) {
+        const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: camera.alpha - Math.PI/2 },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.alpha - Math.PI/4}
+        ]);
+    
+        camera.animations.push(animation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
-
-    // Function to continuously zoom the camera
-    function zoomCamera() {
-    const animation = new BABYLON.Animation("cameraZoomAnimation", "radius", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-    animation.setKeys([
-        { frame: 0, value: camera.radius },
-        { frame: 6000, value: camera.radius - 5 }
-    ]);
-
-    camera.animations.push(animation);
-    scene.beginAnimation(camera, 0, 6000, true);
-    }
-
+    
     // Function to continuously rotate the camera
-    function rotateCamera() {
-    const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", 60, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-    animation.setKeys([
-        { frame: 0, value: camera.beta },
-        { frame: 6000, value: camera.beta + Math.PI / 8 }
-    ]);
-
-    camera.animations.push(animation);
-    scene.beginAnimation(camera, 0, 6000, true);
+    function rotateCamera(camera) {
+        const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: camera.beta - Math.PI/16 },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.beta - Math.PI / 8}
+        ]);
+    
+        camera.animations.push(animation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
-
+    
     // Function to pan camera along a specific path
-    function panCameraAlongPath(path) {
-        let pathAnimation = new BABYLON.Animation("cameraPanPathAnimation", "position", 60, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    function panCameraAlongPath(camera, path) {
+        let pathAnimation = new BABYLON.Animation("cameraPanPathAnimation", "position", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         let keys = [];
         for (let i = 0; i < path.length; i++) {
-            keys.push({ frame: i * (6000 / path.length), value: path[i] });
+            keys.push({ frame: i * (24*60/(3*BPM*QuantisationFactor) / path.length), value: path[i] });
         }
         pathAnimation.setKeys(keys);
         camera.animations.push(pathAnimation);
-        scene.beginAnimation(camera, 0, 6000, true);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
-
+    
     // Helper function to get a random integer between min (inclusive) and max (exclusive)
     function getRandomInt(min, max) {
         return Math.floor(Math.random() * (max - min)) + min;
     }
-
+    
     // Start initial camera movement
-    panCamera();
-    zoomCamera();
-    rotateCamera();
+    panCamera(camera);
+    rotateCamera(camera);
     
+    // Function to apply zoom to fixed cameras
+    function applyZoomToFixedCamera(camera) {
+        const zoomAnimation = new BABYLON.Animation("fixedCameraZoomAnimation",     "radius", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        zoomAnimation.setKeys([
+            { frame: 0, value: camera.radius },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.radius - 5 }
+        ]);
+        camera.animations.push(zoomAnimation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
+    }
     
-    // Start the camera transitions
-    setInterval(transitionToNextCamera, transitionTime * 1000);
+    // Function to apply camera shake
+    function applyCameraShake(camera, intensity = 0.01, frequency = 60) {
+        const shakeAnimation = new BABYLON.Animation("cameraShakeAnimation", "position", frequency, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const keys = [];
+        for (let i = 0; i <= 12000; i += frequency) {
+            keys.push({
+                frame: i,
+                value: new BABYLON.Vector3(
+                    camera.position.x + (Math.random() - 0.5) * intensity,
+                    camera.position.y + (Math.random() - 0.5) * intensity,
+                    camera.position.z + (Math.random() - 0.5) * intensity
+                )
+            });
+        }
+        shakeAnimation.setKeys(keys);
+        camera.animations.push(shakeAnimation);
+        scene.beginAnimation(camera, 0, 6000, true);
+    }
+    
+    // Function to transition between cameras
+    function transitionToCamera(camera) {
+        scene.activeCamera = camera;
+        scene.activeCamera.attachControl(canvas, true);
+    }
+    
+    let transitionTime1 = (60 / (BPM * QuantisationFactor)); // Transition time in seconds
+    setInterval(() => {
+        const cameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
+        const randomCamera = cameras[getRandomInt(0, cameras.length-1)];
+        transitionToCamera(randomCamera);
+    }, transitionTime1 * 1000);
     
     // Fixed Position Cameras
-    const fixedCamera1 = new BABYLON.FreeCamera("fixedCamera1", new BABYLON.Vector3(-5, 5.5, -5), scene);
+    const fixedCamera1 = new BABYLON.FreeCamera("fixedCamera1", new BABYLON.Vector3(-4, 3.5, -4), scene);
     fixedCamera1.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera1
-
-    const fixedCamera2 = new BABYLON.FreeCamera("fixedCamera2", new BABYLON.Vector3(5, 0.5, -5), scene);
+    applyCameraShake(fixedCamera1);
+    
+    const fixedCamera2 = new BABYLON.FreeCamera("fixedCamera2", new BABYLON.Vector3(4, 0.5, -4), scene);
     fixedCamera2.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera2
+    applyCameraShake(fixedCamera2);
     
     // Additional fixed position cameras
-
-    const fixedCamera3 = new BABYLON.FreeCamera("fixedCamera3", new BABYLON.Vector3(5, 2.5, 5), scene);
+    const fixedCamera3 = new BABYLON.FreeCamera("fixedCamera3", new BABYLON.Vector3(2.5, 3.5, 2.5), scene);
     fixedCamera3.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera3
-
-    const fixedCamera4 = new BABYLON.FreeCamera("fixedCamera4", new BABYLON.Vector3(-5, 5.5, 5), scene);
+    applyCameraShake(fixedCamera3);
+    
+    const fixedCamera4 = new BABYLON.FreeCamera("fixedCamera4", new BABYLON.Vector3(2, 5, -5), scene);
     fixedCamera4.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera4
-
-    const fixedCamera5 = new BABYLON.FreeCamera("fixedCamera5", new BABYLON.Vector3(0, 0.5, -5), scene);
+    applyCameraShake(fixedCamera4);
+    
+    const fixedCamera5 = new BABYLON.FreeCamera("fixedCamera5", new BABYLON.Vector3(-2.5, 0.5, -2.5), scene);
     fixedCamera5.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera5
-
-
+    applyCameraShake(fixedCamera5);
+    
+    // Color Grading and Effects
+    scene.imageProcessingConfiguration.contrast = 1.6;
+    scene.imageProcessingConfiguration.exposure = 1.1;
+    
+    // Depth of Field (DoF)
+    const dof = new BABYLON.DepthOfFieldEffect(scene, fixedCamera1, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
+    const dof2 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera2, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
+    const dof3 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera3, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
+    const dof4 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera4, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
+    const dof5 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera5, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
+    
+    // Lighting Effects
+    var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
+    //spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
+    //spotlight.specular = new BABYLON.Color3(1, 1, 1);
+    spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
+    spotlight.specular = new BABYLON.Color3(1, 1, 1);
+    
+    // Slow Motion and Time Effects
+    scene.animationGroups.forEach(group => {
+        group.speedRatio = 1; // Slow motion
+    });
+    
+    // Post-processing Effects
+    var pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5]);
+    pipeline.bloomEnabled = true;
+    pipeline.bloomThreshold = 0.1;
+    pipeline.bloomWeight = 0.8;
+    pipeline.bloomKernel = 128;
+    pipeline.bloomScale = 1;
+    
     // Switch between theatrical and fixed cameras periodically
     let useTheatricalCamera = true;
-    let switchInterval = (60/(BPM*QuantisationFactor)); // Switch cameras every 10ish seconds
+    let switchInterval = (3*60/(BPM*QuantisationFactor))/1; // Switch cameras every 10ish seconds
 
     // Array of fixed cameras
     const fixedCameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
     
     // Switch cameras function now selects randomly from all fixed cameras
+    var D1 = new BABYLON.Vector3(-1, 2.5, 1)
+    var D2 = new BABYLON.Vector3(2, 0.5, 0)
+    
     function switchCameras() {
         if (useTheatricalCamera) {
             scene.activeCamera = camera;
@@ -317,6 +454,20 @@ export function createScene(engine, canvas) {
             setTimeout(switchCameras, switchInterval);
         }
     
+        // Randomly choose a new target value for D
+        const targetIndex = getRandomInt(0, 5);
+        let D;
+        if (targetIndex === 0) {
+            D = D2;
+        } else {
+            D = D1;
+        }
+    
+        // Apply the new target value D to the camera
+        if (scene.activeCamera) {
+            scene.activeCamera.setTarget(D);
+        }
+    
         useTheatricalCamera = !useTheatricalCamera;
     }
     
@@ -326,8 +477,8 @@ export function createScene(engine, canvas) {
     // Animation for lights
     scene.registerBeforeRender(() => {
     const time = performance.now() / 1000;
-    pointLight1.intensity = 0.5 + Math.sin(time * 2) * 0.2; // Simulates flickering
-    pointLight2.intensity = 0.5 + Math.cos(time * 2) * 0.2;
+    pointLight1.intensity = 0.5 + Math.sin(time / 16) * 0.2; // Simulates flickering
+    pointLight2.intensity = 0.5 + Math.cos(time / 16) * 0.2;
     });
     
     function getRandomInt(min, max) {

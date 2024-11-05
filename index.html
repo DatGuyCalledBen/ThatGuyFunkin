@@ -3,21 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Sprite Animation with Babylon.js</title>
+    <title>Choreograph</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
         canvas { width: 100%; height: 100%; display: block; }
     </style>
-    <!-- Import Babylon.js -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
-    <audio id="backgroundMusic" src="Music & JSON Files/high-contrast-x-sammy-virji-if-we-ever-qlank-flip-x-shella-verse-tmp-mashup-scdler.mp3"></audio>
-    <!-- Import environment.js as a module -->
+    <audio id="backgroundMusic"></audio>
+    
+    <!-- Load song data from a JSON file -->
+    <script>
+        async function selectRandomSong() {
+    try {
+        const response = await fetch('songs.json'); // Adjust the path if needed
+        const songs = await response.json();
+
+        // Helper function to generate a seeded random number
+        function seededRandom(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        const seed = Date.now(); // Unique seed based on time
+        const randomIndex = Math.floor(seededRandom(seed) * songs.length);
+
+        // Check if all required properties are defined
+        const selectedSong = songs[randomIndex];
+        if (!selectedSong || !selectedSong.fileName || !selectedSong.bpm || !selectedSong.singer) {
+            throw new Error("Incomplete song data"); // Trigger catch block if data is missing
+        }
+
+        // Set the selected song and BPM to global variables
+        window.audioFileName = selectedSong.fileName;
+        window.audioBPM = selectedSong.bpm;
+        window.vocalist = selectedSong.singer;
+
+        // Log the selected song and BPM
+        console.log(`Selected Song: ${window.audioFileName}`);
+        console.log(`Song BPM: ${window.audioBPM}`);
+    } catch (error) {
+        // Handle errors gracefully by logging and setting backup values
+        console.error('Error loading song data:', error);
+
+        // Fallback values if song data is incomplete
+        window.audioFileName = "aza-our-time-jungle-edit-scdler";
+        window.audioBPM = 156;
+        window.vocalist = "femme";
+    }
+}
+
+// Call the function
+selectRandomSong();
+
+    </script>
+    <!-- Import Babylon.js -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    
+    <!-- Import JavaScript modules -->
     <script type="module" src="./environment.js"></script>
-    <!-- Import main.js as a module -->
     <script type="module" src="./main.js"></script>
 </body>
 </html>
