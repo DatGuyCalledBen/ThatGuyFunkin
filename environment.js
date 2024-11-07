@@ -2,7 +2,7 @@ export function createScene(engine, canvas) {
     
     const scene = new BABYLON.Scene(engine);
     const BPM = window.audioBPM
-    const QuantisationFactor = 1/4000
+    const QuantisationFactor = 1/1000
     // Default background color
     scene.clearColor = new BABYLON.Color3(0, 0, 0);
     
@@ -77,7 +77,7 @@ export function createScene(engine, canvas) {
     }
     
     // Create a neighborhood with 20 rows, 20 columns, 20 units of spacing     between buildings, a 5x5 park area, and 5 units of road width
-    createNeighborhood(scene, 20, 20, 20, 5, 5);
+    createNeighborhood(scene, 20, 20, 10, 5, 5);
 
     // Add simple geometric buildings
     const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
