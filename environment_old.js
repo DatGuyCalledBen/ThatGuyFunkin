@@ -2,7 +2,7 @@ export function createScene(engine, canvas) {
     
     const scene = new BABYLON.Scene(engine);
     const BPM = window.audioBPM
-    const QuantisationFactor = 1/4000
+    const QuantisationFactor = 1/1000
     // Default background color
     scene.clearColor = new BABYLON.Color3(0, 0, 0);
     
@@ -77,7 +77,7 @@ export function createScene(engine, canvas) {
     }
     
     // Create a neighborhood with 20 rows, 20 columns, 20 units of spacing     between buildings, a 5x5 park area, and 5 units of road width
-    createNeighborhood(scene, 20, 20, 20, 5, 5);
+    createNeighborhood(scene, 20, 20, 10, 5, 5);
 
     // Add simple geometric buildings
     const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
@@ -295,11 +295,11 @@ export function createScene(engine, canvas) {
         const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         animation.setKeys([
             { frame: 0, value: camera.alpha - Math.PI/2 },
-            { frame: 128/(BPM*QuantisationFactor), value: camera.alpha - Math.PI/4}
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.alpha - Math.PI/4}
         ]);
     
         camera.animations.push(animation);
-        scene.beginAnimation(camera, 0, 128/(BPM*QuantisationFactor), true);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
     
     // Function to continuously rotate the camera
@@ -307,11 +307,11 @@ export function createScene(engine, canvas) {
         const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         animation.setKeys([
             { frame: 0, value: camera.beta - Math.PI/16 },
-            { frame: 128/(BPM*QuantisationFactor), value: camera.beta - Math.PI / 8}
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.beta - Math.PI / 8}
         ]);
     
         camera.animations.push(animation);
-        scene.beginAnimation(camera, 0, 128/(BPM*QuantisationFactor), true);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
     
     // Function to pan camera along a specific path
@@ -319,11 +319,11 @@ export function createScene(engine, canvas) {
         let pathAnimation = new BABYLON.Animation("cameraPanPathAnimation", "position", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         let keys = [];
         for (let i = 0; i < path.length; i++) {
-            keys.push({ frame: i * (128/(BPM*QuantisationFactor) / path.length), value: path[i] });
+            keys.push({ frame: i * (24*60/(3*BPM*QuantisationFactor) / path.length), value: path[i] });
         }
         pathAnimation.setKeys(keys);
         camera.animations.push(pathAnimation);
-        scene.beginAnimation(camera, 0, 128/(BPM*QuantisationFactor), true);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
     
     // Helper function to get a random integer between min (inclusive) and max (exclusive)
@@ -340,10 +340,10 @@ export function createScene(engine, canvas) {
         const zoomAnimation = new BABYLON.Animation("fixedCameraZoomAnimation",     "radius", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
         zoomAnimation.setKeys([
             { frame: 0, value: camera.radius },
-            { frame: 128/(BPM*QuantisationFactor), value: camera.radius - 5 }
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.radius - 5 }
         ]);
         camera.animations.push(zoomAnimation);
-        scene.beginAnimation(camera, 0, 128/(BPM*QuantisationFactor), true);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
     }
     
     // Function to apply camera shake
@@ -371,7 +371,7 @@ export function createScene(engine, canvas) {
         scene.activeCamera.attachControl(canvas, true);
     }
     
-    let transitionTime1 = (32 / (BPM * QuantisationFactor)); // Transition time in seconds
+    let transitionTime1 = (60 / (BPM * QuantisationFactor)); // Transition time in seconds
     setInterval(() => {
         const cameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
         const randomCamera = cameras[getRandomInt(0, cameras.length-1)];
@@ -433,7 +433,7 @@ export function createScene(engine, canvas) {
     
     // Switch between theatrical and fixed cameras periodically
     let useTheatricalCamera = true;
-    let switchInterval = 128/(BPM*QuantisationFactor); // Switch cameras every 10ish seconds
+    let switchInterval = (3*60/(BPM*QuantisationFactor))/1; // Switch cameras every 10ish seconds
 
     // Array of fixed cameras
     const fixedCameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
@@ -486,43 +486,6 @@ export function createScene(engine, canvas) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min;
     }
-// Create a particle system
-const particleSystem = new BABYLON.ParticleSystem("fogParticles", 5000, scene);
-
-// Set the particle texture (use a soft round texture for fog)
-particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/particle.png", scene);
-
-// Create an emitter (position where the fog originates)
-const emitter = new BABYLON.Vector3(0, 0, 0); // Center of the scene
-particleSystem.emitter = emitter;
-
-// Adjust particle size and lifetime
-particleSystem.minSize = 1.0;
-particleSystem.maxSize = 3.0;
-particleSystem.minLifeTime = 2.0;
-particleSystem.maxLifeTime = 4.0;
-
-// Adjust emission rate for a thick fog effect
-particleSystem.emitRate = 1000;
-
-// Set particle speed for a slow-moving fog
-particleSystem.minEmitPower = 0.5;
-particleSystem.maxEmitPower = 1.5;
-
-// Set the direction of the particles (randomized for fog)
-particleSystem.direction1 = new BABYLON.Vector3(-1, 1, 1);
-particleSystem.direction2 = new BABYLON.Vector3(1, 1, -1);
-
-// Set particle color to a moody tone
-particleSystem.color1 = new BABYLON.Color4(0.8, 0.8, 0.8, 0.5); // Light gray, semi-transparent
-particleSystem.color2 = new BABYLON.Color4(0.5, 0.5, 0.5, 0.3); // Darker gray
-
-// Adjust gravity for a floating effect
-particleSystem.gravity = new BABYLON.Vector3(0, -0.2, 0);
-
-// Start the particle system
-particleSystem.start();
-
 
     return scene;
 }
