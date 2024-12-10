@@ -401,8 +401,8 @@ export function createScene(engine, canvas) {
     applyCameraShake(fixedCamera5);
     
     // Color Grading and Effects
-    scene.imageProcessingConfiguration.contrast = 1.6;
-    scene.imageProcessingConfiguration.exposure = 1.1;
+    scene.imageProcessingConfiguration.contrast = 3;
+    scene.imageProcessingConfiguration.exposure = 1.4;
     
     // Depth of Field (DoF)
     const dof = new BABYLON.DepthOfFieldEffect(scene, fixedCamera1, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
@@ -413,10 +413,10 @@ export function createScene(engine, canvas) {
     
     // Lighting Effects
     var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
-    //spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
-    //spotlight.specular = new BABYLON.Color3(1, 1, 1);
-    spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
+    spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
     spotlight.specular = new BABYLON.Color3(1, 1, 1);
+    //spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
+    //spotlight.specular = new BABYLON.Color3(1, 1, 1);
     
     // Slow Motion and Time Effects
     scene.animationGroups.forEach(group => {
@@ -521,7 +521,7 @@ particleSystem.color2 = new BABYLON.Color4(0.5, 0.5, 0.5, 0.3); // Darker gray
 particleSystem.gravity = new BABYLON.Vector3(0, -0.2, 0);
 
 // Start the particle system
-particleSystem.start();
+//particleSystem.start();
 
 
     return scene;
