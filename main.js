@@ -3677,7 +3677,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (!isLoadingNextSpriteSheet1) {
                     if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)}
-                    currentFrame1 = (currentFrame1 + (elapsed * beatsPerSecond));
+                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
@@ -3685,7 +3685,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (!isLoadingNextSpriteSheet2) {
                     if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)}
-                    currentFrame2 = (currentFrame2 + (elapsed * beatsPerSecond));
+                    currentFrame2 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite2.cellIndex = Math.floor(currentFrame2);
@@ -3736,16 +3736,16 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = Math.max(0,((audio.currentTime-(50/BPM)) * 1000));
+            const currentTime = Math.max(0,(audio.currentTime-(0.2*(BPM/100)))*1000);
             for (let entry of danceData1) {
-                if (currentTime <= entry.t) {
+                if (currentTime <= entry.t + entry.l) {
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime <= entry.t) {
+                if (currentTime <= entry.t + entry.l) {
                     switchSprite2(entry.d);
                     break;
                 }

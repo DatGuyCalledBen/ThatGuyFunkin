@@ -455,9 +455,9 @@ export function createScene(engine, canvas) {
         }
     
         // Randomly choose a new target value for D
-        const targetIndex = getRandomInt(0, 5);
+        const targetIndex = getRandomInt(0, 10);
         let D;
-        if (targetIndex === 0) {
+        if (targetIndex == 0) {
             D = D2;
         } else {
             D = D1;
