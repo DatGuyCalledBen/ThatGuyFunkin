@@ -3736,16 +3736,16 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = Math.max(0,(audio.currentTime-(0.2*(BPM/100)))*1000);
+            const currentTime = Math.max(0,(audio.currentTime-(0.05*(BPM/100)))*1000);
             for (let entry of danceData1) {
-                if (currentTime <= entry.t + entry.l) {
+                if (currentTime <= entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/BPM)) {
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime <= entry.t + entry.l) {
+                if (currentTime <= entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/BPM)) {
                     switchSprite2(entry.d);
                     break;
                 }
