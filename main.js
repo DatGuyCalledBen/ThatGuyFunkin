@@ -3738,14 +3738,14 @@ document.addEventListener("DOMContentLoaded", function () {
             
             const currentTime = Math.max(0,(audio.currentTime-(0.05*(BPM/100)))*1000);
             for (let entry of danceData1) {
-                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/BPM)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(2*BPM))) {
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/BPM)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/(2*BPM))) {
                     switchSprite2(entry.d);
                     break;
                 }
