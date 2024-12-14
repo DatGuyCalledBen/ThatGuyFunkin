@@ -3588,6 +3588,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     var D1 = new BABYLON.Vector3(-1, 2.5, 1);
     var D2 = new BABYLON.Vector3(2, 0.5, 0);
+    // var D1 = new BABYLON.Vector3(-2, 2.45, -2);
+    // var D2 = new BABYLON.Vector3(2, 0.5, -2);
 
     let currentSpriteSheetIndex1 = 5;
     let currentFrame1 = 0;
@@ -3611,21 +3613,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const vocalist = groupKeys[Math.floor(seededRandom(seed) * groupKeys.length)];
     
-    const animationSpeed = config.sprites.group[vocalist][0].frames/(BPM)
+    const beatsPerSecond = (BPM/60);
 
-    function spriteGetter1() {
-    try {
-        // Attempt to create sprite managers for 'vocalist' group
-        return config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
-    } catch (error) {
-        // If an error occurs, fall back to creating sprite managers for 'loona' group
-        console.warn('Sprite retrieval error, defaulting to backstop.')
-        return config.sprites.group['loona'].map(data => createSpriteManager1(data, scene));
-    }
-    }
-    
     // Call spriteManagers1 function to initialize the sprite managers
-    const spriteManagers1 = spriteGetter1();
+    const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
 
     // Preload sprite managers for a specific character (e.g., tomguitar) within homme
     // configure to choose homme/femme based on config variable
@@ -3678,23 +3669,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function startAnimation() {
         try {
-            const quantizationFactor = (2^8);
-            const updateFrequency = 60 / (BPM * quantizationFactor);
-
-            let lastTimestamp = performance.now();
-
+            let lastTimestamp = 0
+            let timestamp = performance.now()
             function animate(timestamp) {
-                const elapsed = timestamp - lastTimestamp;
+                timestamp = performance.now();
+                let elapsed = ((timestamp - lastTimestamp)/1000) * (2 ** 4);
 
                 if (!isLoadingNextSpriteSheet1) {
-                    currentFrame1 = (currentFrame1 + (elapsed * animationSpeed)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames;
+                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)}
+                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
                 }
 
                 if (!isLoadingNextSpriteSheet2) {
-                    currentFrame2 = (currentFrame2 + (elapsed * animationSpeed)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames;
+                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)}
+                    currentFrame2 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite2.cellIndex = Math.floor(currentFrame2);
@@ -3719,6 +3710,8 @@ document.addEventListener("DOMContentLoaded", function () {
             currentSpriteSheetIndex1 = newSpriteSheetIndex;
             sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
             sprite1.position = D1;
+            sprite1.cellIndex = 0
+            currentFrame1 = 0
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
@@ -3732,6 +3725,8 @@ document.addEventListener("DOMContentLoaded", function () {
             currentSpriteSheetIndex2 = newSpriteSheetIndex;
             sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
             sprite2.position = D2;
+            sprite2.cellIndex = 0
+            currentFrame2 = 0
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
@@ -3740,18 +3735,17 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !isAudioStarted) return;
-
-            const currentTime = audio.currentTime * 1000;
-
+            
+            const currentTime = Math.max(0,(audio.currentTime-(0.05*(BPM/100)))*1000);
             for (let entry of danceData1) {
-                if (currentTime >= entry.t && currentTime < (entry.t + entry.l)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(2*BPM))) {
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime >= entry.t && currentTime < (entry.t + entry.l)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/(2*BPM))) {
                     switchSprite2(entry.d);
                     break;
                 }
@@ -3856,4 +3850,3 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
-
