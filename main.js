@@ -3615,8 +3615,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     const beatsPerSecond = (BPM/60);
     
-    const animationSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][0].frames))*4
-    const animationSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames))*4
+    const animationSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8
+    const animationSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8
 
     // Call spriteManagers1 function to initialize the sprite managers
     const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
