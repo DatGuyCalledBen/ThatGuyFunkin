@@ -3759,11 +3759,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const avgDuration2 = calculateAverageDuration(danceData2);
     const globalAvgDuration = (avgDuration1 + avgDuration2) / 2; // Optional: global average
     
-    const SHORT_THRESHOLD_MULTIPLIER = 0.67; // Adjust as needed
-    const LONG_THRESHOLD_MULTIPLIER = 1.67; // Adjust as needed
-    const shortThreshold = avgDuration1 * SHORT_THRESHOLD_MULTIPLIER;
-    const longThreshold = avgDuration2 * LONG_THRESHOLD_MULTIPLIER;
-
+    const SHORT_THRESHOLD_MULTIPLIER = 0.5; // Adjust as needed
+    const LONG_THRESHOLD_MULTIPLIER = 1.5; // Adjust as needed
+    const shortThreshold = globalAvgDuration * SHORT_THRESHOLD_MULTIPLIER;
+    const longThreshold = globalAvgDuration * LONG_THRESHOLD_MULTIPLIER;
+    
+        
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !isAudioStarted) return;
@@ -3773,7 +3774,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let isShortNoteAllowed = false;
     
             for (let entry of danceData1) {
-                const duration = entry.l;
+            const duration = entry.l;
                 const noteEnd = entry.t + ((duration * config.sprites.group[vocalist][currentSpriteSheetIndex1].frames) / (2 * BPM));
     
                 if (currentTime >= entry.t && currentTime < noteEnd) {
@@ -3819,6 +3820,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Error in updateSpriteBasedOnTime:', error);
         }
     }
+
 
 
 
