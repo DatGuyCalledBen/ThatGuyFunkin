@@ -3748,81 +3748,31 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Error in switchSprite2:', error);
         }
     }
-    
-    // Assuming danceData1 and danceData2 are arrays of entries
-    const calculateAverageDuration = (data) => {
-        if (!data || data.length === 0) return 0;
-        return data.reduce((sum, entry) => sum + entry.l, 0) / data.length;
-    };
-    
-    const avgDuration1 = calculateAverageDuration(danceData1);
-    const avgDuration2 = calculateAverageDuration(danceData2);
-    const globalAvgDuration = (avgDuration1 + avgDuration2) / 2; // Optional: global average
-    
-    const SHORT_THRESHOLD_MULTIPLIER = 0.5; // Adjust as needed
-    const LONG_THRESHOLD_MULTIPLIER = 1.5; // Adjust as needed
-    const shortThreshold = globalAvgDuration * SHORT_THRESHOLD_MULTIPLIER;
-    const longThreshold = globalAvgDuration * LONG_THRESHOLD_MULTIPLIER;
-    
-        
+
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !isAudioStarted) return;
-    
-            const currentTime = Math.max(0, (audio.currentTime - (0.05 * (BPM / 100))) * 1000);
-    
-            let isShortNoteAllowed = false;
-    
+            
+            const currentTime = Math.max(0,(audio.currentTime-(0.05*(BPM/100)))*1000);
             for (let entry of danceData1) {
-            const duration = entry.l;
-                const noteEnd = entry.t + ((duration * config.sprites.group[vocalist][currentSpriteSheetIndex1].frames) / (2 * BPM));
-    
-                if (currentTime >= entry.t && currentTime < noteEnd) {
-                    if (duration < shortThreshold) {
-                        // Allow short notes if no long note is nearby
-                        if (!isShortNoteAllowed) {
-                            switchSprite1(entry.d);
-                            isShortNoteAllowed = true; // Prevent immediate repeats
-                            break;
-                        }
-                    } else if (duration > longThreshold) {
-                        // Handle long notes
-                        switchSprite1(entry.d);
-                        isShortNoteAllowed = false; // Reset for new long note
-                        break;
-                    }
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(2*BPM))) {
+                    switchSprite1(entry.d);
+                    break;
                 }
             }
-    
+
             for (let entry of danceData2) {
-                const duration = entry.l;
-                const noteEnd = entry.t + ((duration * config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames) / (2 * BPM));
-    
-                if (currentTime >= entry.t && currentTime < noteEnd) {
-                    if (duration < shortThreshold) {
-                        // Allow short notes
-                        if (!isShortNoteAllowed) {
-                            switchSprite2(entry.d);
-                            isShortNoteAllowed = true;
-                            break;
-                        }
-                    } else if (duration > longThreshold) {
-                        // Handle long notes
-                        switchSprite2(entry.d);
-                        isShortNoteAllowed = false;
-                        break;
-                    }
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/(2*BPM))) {
+                    switchSprite2(entry.d);
+                    break;
                 }
             }
-    
+
             setTimeout(updateSpriteBasedOnTime, 0);
         } catch (error) {
             console.error('Error in updateSpriteBasedOnTime:', error);
         }
     }
-
-
-
 
     function validateDanceData(data) {
         try {
