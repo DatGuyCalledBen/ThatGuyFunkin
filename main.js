@@ -3679,14 +3679,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 let elapsed = ((timestamp - lastTimestamp)/1000) * (2 ** 4);
 
                 if (!isLoadingNextSpriteSheet1) {
-                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * animationSpeed1)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
                         if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
                             currentFrame1 = (currentFrame1 + (elapsed * animationSpeed1)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames; sprite1.cellIndex = Math.floor(currentFrame1)
                         } else {
                             currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)
                         }
                     } else {
-                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * beatsPerSecond));
+                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * animationSpeed1));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
@@ -3694,14 +3694,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (!isLoadingNextSpriteSheet2) {
-                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
+                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * animationSpeed2)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
                         if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
                             currentFrame2 = (currentFrame2 + (elapsed * animationSpeed2)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames; sprite1.cellIndex = Math.floor(currentFrame1)
                         } else {
                             currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
                         }
                     } else {
-                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
+                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * animationSpeed2));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite2.cellIndex = Math.floor(currentFrame2);
@@ -3753,7 +3753,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = Math.max(0,(audio.currentTime-(0.05*(BPM/100)))*1000);
+            const currentTime = Math.max(0,(audio.currentTime+(0.01*(BPM/100)))*1000);
             for (let entry of danceData1) {
                 if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(BPM*2))) {
                     switchSprite1(entry.d);
