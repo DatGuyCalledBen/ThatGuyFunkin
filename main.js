@@ -3701,7 +3701,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
                         }
                     } else {
-                    currentFrame2 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
+                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite2.cellIndex = Math.floor(currentFrame2);
