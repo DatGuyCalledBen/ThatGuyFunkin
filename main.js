@@ -15,6 +15,44 @@ const config = {
     },
     sprites: {
         group: {
+            loona: [
+                {
+                    url: "SPRITE/MIX/loona/left_sprite_sheet.png",
+                    frames: 10,
+                    width: 878,
+                    height: 878
+                },
+                {
+                    url: "SPRITE/MIX/loona/down_sprite_sheet.png",
+                    frames: 10,
+                    width: 617,
+                    height: 617
+                },
+                {
+                    url: "SPRITE/MIX/loona/up_sprite_sheet.png",
+                    frames: 10,
+                    width: 992,
+                    height: 992
+                },
+                {
+                    url: "SPRITE/MIX/loona/right_sprite_sheet.png",
+                    frames: 10,
+                    width: 796,
+                    height: 796
+                },
+                {
+                    url: "SPRITE/MIX/loona/idle_sprite_sheet.png",
+                    frames: 14,
+                    width: 932,
+                    height: 932
+                },
+                {
+                    url: "SPRITE/MIX/loona/idle_sprite_sheet.png",
+                    frames: 14,
+                    width: 932,
+                    height: 932
+                }
+            ],
             LionMaru: [
                 {
                     url: "SPRITE/MIX/17LionMaru/left_sprite_sheet.png",
@@ -1223,44 +1261,6 @@ const config = {
                     frames: 14,
                     width: 641,
                     height: 641
-                }
-            ],
-            loona: [
-                {
-                    url: "SPRITE/MIX/loona/left_sprite_sheet.png",
-                    frames: 10,
-                    width: 878,
-                    height: 878
-                },
-                {
-                    url: "SPRITE/MIX/loona/down_sprite_sheet.png",
-                    frames: 10,
-                    width: 617,
-                    height: 617
-                },
-                {
-                    url: "SPRITE/MIX/loona/up_sprite_sheet.png",
-                    frames: 10,
-                    width: 992,
-                    height: 992
-                },
-                {
-                    url: "SPRITE/MIX/loona/right_sprite_sheet.png",
-                    frames: 10,
-                    width: 796,
-                    height: 796
-                },
-                {
-                    url: "SPRITE/MIX/loona/idle_sprite_sheet.png",
-                    frames: 14,
-                    width: 932,
-                    height: 932
-                },
-                {
-                    url: "SPRITE/MIX/loona/idle_sprite_sheet.png",
-                    frames: 14,
-                    width: 932,
-                    height: 932
                 }
             ],
             Lyc_Assets: [
@@ -3603,15 +3603,40 @@ document.addEventListener("DOMContentLoaded", function () {
     // Get an array of keys from the group object
     const groupKeys = Object.keys(config.sprites.group);
     
-    // Select a random key from the array
+    // Function to generate a seeded random number
     function seededRandom(seed) {
         const x = Math.sin(seed++) * 10000;
         return x - Math.floor(x);
     }
     
-    const seed = Date.now(); // Unique seed based on time
+    // Function to select a valid vocalist
+    function selectVocalist(seed, maxAttempts = 5, fallbackIndex = 0) {
+        let attempts = 0;
+        let selectedKey;
     
-    const vocalist = groupKeys[Math.floor(seededRandom(seed) * groupKeys.length)];
+        do {
+            const randomIndex = Math.floor(seededRandom(seed) * groupKeys.length);
+            selectedKey = groupKeys[randomIndex];
+            attempts++;
+            console.log(`attempt: ${attempts}`);
+            seed++; // Increment the seed for the next iteration
+        } while (
+            attempts < maxAttempts &&
+            (!selectedKey || !config.sprites.group[selectedKey])
+        );
+    
+        // Fallback to a specific value if no valid selection was found
+        if (!selectedKey || !config.sprites.group[selectedKey]) {
+            selectedKey = groupKeys[fallbackIndex];
+        }
+    
+        return selectedKey;
+    }
+    
+    const seed = Date.now(); // Unique seed based on time
+    const vocalist = selectVocalist(seed);
+    
+    console.log(`Selected vocalist: ${vocalist}`);
     
     const beatsPerSecond = (BPM/60);
     
@@ -3667,6 +3692,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })
     .catch(error => {
+        fetch(`JSON/1_${window.audioFileName}_(Vocals).json`).then(response => response.json());
+        fetch(`JSON/1_${window.audioFileName}_(Bass).json`).then(response => response.json());
+        danceData1 = validateDanceData(data1);
+        danceData2 = validateDanceData(data2);
         console.error('Fetch error:', error);
     });
 
