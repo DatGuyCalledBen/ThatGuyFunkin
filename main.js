@@ -3681,7 +3681,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!isLoadingNextSpriteSheet1) {
                     if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
                         if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
-                            currentFrame1 = ((config.sprites.group[vocalist][currentSpriteSheetIndex1].frames/(4*beatsPerSecond)) + currentFrame1 + (elapsed * animationSpeed1)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames; sprite1.cellIndex = Math.floor(currentFrame1)
+                            currentFrame1 = (currentFrame1 + (elapsed * animationSpeed1)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames; sprite1.cellIndex = Math.floor(currentFrame1)
                         } else {
                             currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)
                         }
@@ -3696,7 +3696,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!isLoadingNextSpriteSheet2) {
                     if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
                         if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
-                            currentFrame2 = ((config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames/(4*beatsPerSecond)) + currentFrame2 + (elapsed * animationSpeed2)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames; sprite1.cellIndex = Math.floor(currentFrame1)
+                            currentFrame2 = (currentFrame2 + (elapsed * animationSpeed2)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames; sprite2.cellIndex = Math.floor(currentFrame2)
                         } else {
                             currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
                         }
