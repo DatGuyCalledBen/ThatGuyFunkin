@@ -3609,34 +3609,53 @@ document.addEventListener("DOMContentLoaded", function () {
         return x - Math.floor(x);
     }
     
+    // Function to validate a sprite URL by checking if it exists
+    async function isSpriteValid(spriteKey) {
+        const basePath = `https://thatguycalledben.com/ThatGuyFunkin/SPRITE/MIX/${spriteKey}`;
+        const directions = ['left', 'down', 'up', 'idle', 'right'];
+        try {
+            for (const direction of directions) {
+                const response = await fetch(`${basePath}/${direction}_sprite_sheet.png`, { method: 'HEAD' });
+                if (!response.ok) {
+                        console.error(`Missing sprite: ${direction}_sprite_sheet for key ${spriteKey}`);
+                    return false;
+                }
+            }
+            return true;
+        } catch (err) {
+            console.error(`Error checking sprites for key ${spriteKey}:`, err);
+            return false;
+        }
+    }
+    
     // Function to select a valid vocalist
-    function selectVocalist(seed, maxAttempts = 5, fallbackIndex = 0) {
+    async function selectVocalist(seed, maxAttempts = 10, fallbackIndex = 0) {
         let attempts = 0;
         let selectedKey;
-    
-        do {
+
+        while (attempts < maxAttempts) {
             const randomIndex = Math.floor(seededRandom(seed) * groupKeys.length);
             selectedKey = groupKeys[randomIndex];
             attempts++;
-            console.log(`attempt: ${attempts}`);
+            console.log(`Attempt: ${attempts}, Checking key: ${selectedKey}`);
             seed++; // Increment the seed for the next iteration
-        } while (
-            attempts < maxAttempts &&
-            (!selectedKey || !config.sprites.group[selectedKey])
-        );
     
-        // Fallback to a specific value if no valid selection was found
-        if (!selectedKey || !config.sprites.group[selectedKey]) {
-            selectedKey = groupKeys[fallbackIndex];
+            if (await isSpriteValid(selectedKey)) {
+                console.log(`Valid key found: ${selectedKey}`);
+                return selectedKey;
+            }
         }
     
-        return selectedKey;
+        // Fallback to a specific value if no valid selection was found
+        console.warn(`No valid sprite found after ${maxAttempts} attempts. Defaulting to index ${fallbackIndex}.`);
+        return groupKeys[fallbackIndex];
     }
     
-    const seed = Date.now(); // Unique seed based on time
-    const vocalist = selectVocalist(seed);
-    
-    console.log(`Selected vocalist: ${vocalist}`);
+    // Main execution
+    (async () => {
+        const seed = Date.now(); // Unique seed based on time
+        const vocalist = await selectVocalist(seed);
+        console.log(`Selected vocalist: ${vocalist}`);
     
     const beatsPerSecond = (BPM/60);
     
@@ -3692,10 +3711,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     })
     .catch(error => {
-        fetch(`JSON/1_${window.audioFileName}_(Vocals).json`).then(response => response.json());
-        fetch(`JSON/1_${window.audioFileName}_(Bass).json`).then(response => response.json());
-        danceData1 = validateDanceData(data1);
-        danceData2 = validateDanceData(data2);
         console.error('Fetch error:', error);
     });
 
@@ -3895,4 +3910,5 @@ document.addEventListener("DOMContentLoaded", function () {
             return null;
         }
     }
+    })();
 });
