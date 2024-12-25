@@ -3586,26 +3586,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Define sprite positions
     
-        // Define sprite positions
     var D1 = new BABYLON.Vector3(-1, 2.5, 1);
     var D2 = new BABYLON.Vector3(2, 0.5, 0);
-    var D3 = new BABYLON.Vector3(-3, 1.5, 2);
-    var D4 = new BABYLON.Vector3(3, 1.5, -2);
-    
-    // Variables for sprite states
+    // var D1 = new BABYLON.Vector3(-2, 2.45, -2);
+    // var D2 = new BABYLON.Vector3(2, 0.5, -2);
+
     let currentSpriteSheetIndex1 = 5;
     let currentFrame1 = 0;
     let currentSpriteSheetIndex2 = 5;
     let currentFrame2 = 0;
-    let currentSpriteSheetIndex3 = 5;
-    let currentFrame3 = 0;
-    let currentSpriteSheetIndex4 = 5;
-    let currentFrame4 = 0;
     
     let isLoadingNextSpriteSheet1 = false;
     let isLoadingNextSpriteSheet2 = false;
-    let isLoadingNextSpriteSheet3 = false;
-    let isLoadingNextSpriteSheet4 = false;
     let isAudioStarted = false;
     
     // Get an array of keys from the group object
@@ -3659,24 +3651,26 @@ document.addEventListener("DOMContentLoaded", function () {
         return groupKeys[fallbackIndex];
     }
     
-
-    
     // Main execution
-(async () => {
-    const seed = Date.now(); // Unique seed based on time
-    const vocalist = await selectVocalist(seed);
+    (async () => {
+        const seed = Date.now(); // Unique seed based on time
+        const vocalist = await selectVocalist(seed);
+        console.log(`Selected vocalist: ${vocalist}`);
+    
+    const beatsPerSecond = (BPM/60);
+    
+    const animationSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8
+    const animationSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8
 
-    const beatsPerSecond = BPM / 60;
+    // Call spriteManagers1 function to initialize the sprite managers
+    const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
 
-    const animationSpeed1 = (beatsPerSecond / config.sprites.group[vocalist][4].frames) * 8;
-    const animationSpeed2 = (beatsPerSecond / config.sprites.group.tomSusanAssets[4].frames) * 8;
-    const animationSpeed3 = (beatsPerSecond / config.sprites.group[vocalist][4].frames) * 8;
-    const animationSpeed4 = (beatsPerSecond / config.sprites.group.tomSusanAssets[4].frames) * 8;
-
-    const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager(data, scene));
-    const spriteManagers2 = config.sprites.group.tomSusanAssets.map(data => createSpriteManager(data, scene));
-    const spriteManagers3 = config.sprites.group[vocalist].map(data => createSpriteManager(data, scene));
-    const spriteManagers4 = config.sprites.group.tomSusanAssets.map(data => createSpriteManager(data, scene));
+    // Preload sprite managers for a specific character (e.g., tomguitar) within homme
+    // configure to choose homme/femme based on config variable
+                    // configure to choose char based on random list selection
+    const spriteManagers2 = config.sprites.group.tomSusanAssets.map(data => createSpriteManager2(data, scene));
+    // configure to choose homme/femme based on config variable
+                    // configure to choose char based on random list selection
 
     let sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
     sprite1.position = D1;
@@ -3684,79 +3678,146 @@ document.addEventListener("DOMContentLoaded", function () {
     let sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
     sprite2.position = D2;
 
-    let sprite3 = new BABYLON.Sprite("sprite3", spriteManagers3[currentSpriteSheetIndex3]);
-    sprite3.position = D3;
-
-    let sprite4 = new BABYLON.Sprite("sprite4", spriteManagers4[currentSpriteSheetIndex4]);
-    sprite4.position = D4;
-
     const audio = document.getElementById("backgroundMusic");
+    let danceData1, danceData2;
 
+    // Handle click event to start audio and animations
     canvas.addEventListener("click", function () {
         if (!isAudioStarted) {
             audio.play();
             isAudioStarted = true;
+
+            // Start animation and self-healing check after audio starts
             startAnimation();
+            startSelfHealingCheck(true);
             updateSpriteBasedOnTime();
         }
     });
 
-    function startAnimation() {
-        function animate(timestamp) {
-            let elapsed = ((timestamp - lastTimestamp) / 1000) * (2 ** 4);
+    Promise.all([
+        fetch(config.paths.vocals).then(response => response.json()),
+        fetch(config.paths.bass).then(response => response.json())
+    ])
+    .then(([data1, data2]) => {
+        danceData1 = validateDanceData(data1);
+        danceData2 = validateDanceData(data2);
 
-            updateSpriteAnimation(sprite1, config.sprites.group[vocalist], currentSpriteSheetIndex1, currentFrame1, animationSpeed1, isLoadingNextSpriteSheet1);
-            updateSpriteAnimation(sprite2, config.sprites.group.tomSusanAssets, currentSpriteSheetIndex2, currentFrame2, animationSpeed2, isLoadingNextSpriteSheet2);
-            updateSpriteAnimation(sprite3, config.sprites.group[vocalist], currentSpriteSheetIndex3, currentFrame3, animationSpeed3, isLoadingNextSpriteSheet3);
-            updateSpriteAnimation(sprite4, config.sprites.group.tomSusanAssets, currentSpriteSheetIndex4, currentFrame4, animationSpeed4, isLoadingNextSpriteSheet4);
-
-            scene.render();
-            lastTimestamp = timestamp;
-            requestAnimationFrame(animate);
+        if (danceData1.length === 0) {
+            console.warn('No valid dance data found for first sprite');
         }
-        let lastTimestamp = performance.now();
-        requestAnimationFrame(animate);
+
+        if (danceData2.length === 0) {
+            console.warn('No valid dance data found for second sprite');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+    });
+
+    function startAnimation() {
+        try {
+            let lastTimestamp = 0
+            let timestamp = performance.now()
+            function animate(timestamp) {
+                timestamp = performance.now();
+                let elapsed = ((timestamp - lastTimestamp)/1000) * (2 ** 4);
+
+                if (!isLoadingNextSpriteSheet1) {
+                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+                        if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
+                            currentFrame1 = (currentFrame1 + (elapsed * animationSpeed1)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames; sprite1.cellIndex = Math.floor(currentFrame1)
+                        } else {
+                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)
+                        }
+                    } else {
+                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * beatsPerSecond));
+                    // configure to choose homme/femme based on config variable
+                    // configure to choose char based on random list selection
+                    sprite1.cellIndex = Math.floor(currentFrame1);
+                    }
+                }
+
+                if (!isLoadingNextSpriteSheet2) {
+                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
+                        if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
+                            currentFrame2 = (currentFrame2 + (elapsed * animationSpeed2)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames; sprite2.cellIndex = Math.floor(currentFrame2)
+                        } else {
+                            currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
+                        }
+                    } else {
+                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
+                    // configure to choose homme/femme based on config variable
+                    // configure to choose char based on random list selection
+                    sprite2.cellIndex = Math.floor(currentFrame2);
+                    }
+                }
+
+                scene.render();
+                lastTimestamp = timestamp;
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        } catch (error) {
+            console.error('Error starting animation:', error);
+        }
+    }
+
+    function switchSprite1(newSpriteSheetIndex) {
+        try {
+            if (currentSpriteSheetIndex1 === newSpriteSheetIndex) return;
+
+            sprite1.dispose();
+            currentSpriteSheetIndex1 = newSpriteSheetIndex;
+            sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
+            sprite1.position = D1;
+            sprite1.cellIndex = 0
+            currentFrame1 = 0
+        } catch (error) {
+            console.error('Error in switchSprite1:', error);
+        }
+    }
+
+    function switchSprite2(newSpriteSheetIndex) {
+        try {
+            if (currentSpriteSheetIndex2 === newSpriteSheetIndex) return;
+
+            sprite2.dispose();
+            currentSpriteSheetIndex2 = newSpriteSheetIndex;
+            sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
+            sprite2.position = D2;
+            sprite2.cellIndex = 0
+            currentFrame2 = 0
+        } catch (error) {
+            console.error('Error in switchSprite2:', error);
+        }
     }
 
     function updateSpriteBasedOnTime() {
-        const currentTime = Math.max(0, audio.currentTime * 1000);
-
-        switchSpriteBasedOnTime(sprite1, danceData1, currentTime, vocalist, currentSpriteSheetIndex1);
-        switchSpriteBasedOnTime(sprite2, danceData2, currentTime, "tomSusanAssets", currentSpriteSheetIndex2);
-        switchSpriteBasedOnTime(sprite3, danceData1, currentTime, vocalist, currentSpriteSheetIndex3);
-        switchSpriteBasedOnTime(sprite4, danceData2, currentTime, "tomSusanAssets", currentSpriteSheetIndex4);
-
-        setTimeout(updateSpriteBasedOnTime, 0);
-    }
-
-    function switchSpriteBasedOnTime(sprite, danceData, currentTime, groupKey, currentSpriteSheetIndex) {
-        for (let entry of danceData) {
-            if (currentTime >= entry.t && currentTime < entry.t + ((entry.l * config.sprites.group[groupKey][currentSpriteSheetIndex].frames) / (BPM * 2))) {
-                switchSprite(sprite, entry.d, groupKey);
-                break;
+        try {
+            if (!danceData1 || !isAudioStarted) return;
+            
+            const currentTime = Math.max(0,audio.currentTime*1000);
+            for (let entry of danceData1) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(BPM*2))) {
+                    switchSprite1(entry.d);
+                    break;
+                }
             }
+
+            for (let entry of danceData2) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/(BPM*2))) {
+                    switchSprite2(entry.d);
+                    break;
+                }
+            }
+
+            setTimeout(updateSpriteBasedOnTime, 0);
+        } catch (error) {
+            console.error('Error in updateSpriteBasedOnTime:', error);
         }
     }
 
-    function switchSprite(sprite, newSpriteSheetIndex, groupKey) {
-        if (currentSpriteSheetIndex === newSpriteSheetIndex) return;
-
-        sprite.dispose();
-        sprite = new BABYLON.Sprite("sprite", config.sprites.group[groupKey][newSpriteSheetIndex]);
-        sprite.cellIndex = 0;
-    }
-
-    function updateSpriteAnimation(sprite, groupData, currentSpriteSheetIndex, currentFrame, animationSpeed, isLoadingNext) {
-        if (isLoadingNext) return;
-
-        if (currentFrame >= groupData[currentSpriteSheetIndex].frames - 1) {
-            currentFrame = (currentFrame + animationSpeed) % groupData[currentSpriteSheetIndex].frames;
-        } else {
-            currentFrame = Math.min(groupData[currentSpriteSheetIndex].frames - 1, currentFrame + animationSpeed);
-        }
-        sprite.cellIndex = Math.floor(currentFrame);
-    }
-    
     function validateDanceData(data) {
         try {
             if (!Array.isArray(data)) {
@@ -3786,8 +3847,68 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function createSpriteManager(data, scene) {
-        return new BABYLON.SpriteManager("spriteManager", data.url, data.frames, { width: data.width, height: data.height }, scene);
+    function startSelfHealingCheck(enableSelfHealing = true) {
+        if (!enableSelfHealing) return;
+
+        const intervalSeconds = 5;
+        let lastSpriteSwitchTime1 = Date.now();
+        let lastSpriteSwitchTime2 = Date.now();
+
+        setInterval(() => {
+            try {
+                const currentTime = Date.now();
+                if (currentTime - lastSpriteSwitchTime1 > intervalSeconds * 1000) {
+                    updateSpriteBasedOnTime();
+                }
+                if (currentTime - lastSpriteSwitchTime2 > intervalSeconds * 1000) {
+                    updateSpriteBasedOnTime();
+                }
+                lastSpriteSwitchTime1 = currentTime;
+                lastSpriteSwitchTime2 = currentTime;
+            } catch (error) {
+                console.error('Error in self-healing check:', error);
+            }
+        }, intervalSeconds * 1000);
     }
-})();
+
+    function getIdleSprite(sheetData) {
+        return sheetData.find(sheet => sheet.url.endsWith("idle_sprite_sheet.png")) || null;
+    }
+
+    function createSpriteManager1(data, scene) {
+        try {
+            if (!data) {
+                const idleSprite = getIdleSprite(config.sprites.group[vocalist]);
+                if (idleSprite) {
+                    return new BABYLON.SpriteManager("spriteManager", idleSprite.url, 1, { width: idleSprite.width, height: idleSprite.height }, scene);
+                } else {
+                    throw new Error('No idle sprite found');
+                }
+            }
+
+            return new BABYLON.SpriteManager("spriteManager", data.url, data.frames, { width: data.width, height: data.height }, scene);
+        } catch (error) {
+            console.error('Error creating sprite manager:', error);
+            return null;
+        }
+    }
+
+    function createSpriteManager2(data, scene) {
+        try {
+            if (!data) {
+                const idleSprite = getIdleSprite(config.sprites.group.tomSusanAssets);
+                if (idleSprite) {
+                    return new BABYLON.SpriteManager("spriteManager", idleSprite.url, 1, { width: idleSprite.width, height: idleSprite.height }, scene);
+                } else {
+                    throw new Error('No idle sprite found');
+                }
+            }
+
+            return new BABYLON.SpriteManager("spriteManager", data.url, data.frames, { width: data.width, height: data.height }, scene);
+        } catch (error) {
+            console.error('Error creating sprite manager:', error);
+            return null;
+        }
+    }
+    })();
 });
