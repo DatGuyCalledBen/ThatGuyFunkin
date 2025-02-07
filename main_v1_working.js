@@ -3588,8 +3588,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     var D1 = new BABYLON.Vector3(-1, 2.5, 1);
     var D2 = new BABYLON.Vector3(2, 0.5, 0);
-    //var D1 = new BABYLON.Vector3(-2, 2.45, -2);
-    //var D2 = new BABYLON.Vector3(2, 0.5, -2);
+    // var D1 = new BABYLON.Vector3(-2, 2.45, -2);
+    // var D2 = new BABYLON.Vector3(2, 0.5, -2);
 
     let currentSpriteSheetIndex1 = 5;
     let currentFrame1 = 0;
@@ -3658,10 +3658,9 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log(`Selected vocalist: ${vocalist}`);
     
     const beatsPerSecond = (BPM/60);
-    const beatDuration = (1/beatsPerSecond);
     
-    const idleSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8;
-    const idleSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8;
+    const animationSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8
+    const animationSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8
 
     // Call spriteManagers1 function to initialize the sprite managers
     const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
@@ -3721,21 +3720,17 @@ document.addEventListener("DOMContentLoaded", function () {
             let timestamp = performance.now()
             function animate(timestamp) {
                 timestamp = performance.now();
-                let elapsed = (audio.currentTime % beatDuration);
-                console.warn('beat time elapsed:',elapsed)
+                let elapsed = ((timestamp - lastTimestamp)/1000) * (2 ** 4);
 
                 if (!isLoadingNextSpriteSheet1) {
-                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * beatsPerSecond)) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
                         if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
-                            //if (currentFrame1 == 0) {sprite1.cellIndex = Math.floor(currentFrame1);
-                            //} else {
-                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)) % (config.sprites.group[vocalist][currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
-                            //};
+                            currentFrame1 = (currentFrame1 + (elapsed * animationSpeed1)) % config.sprites.group[vocalist][currentSpriteSheetIndex1].frames; sprite1.cellIndex = Math.floor(currentFrame1)
                         } else {
-                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
+                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1)
                         }
                     } else {
-                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
+                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
@@ -3743,17 +3738,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (!isLoadingNextSpriteSheet2) {
-                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * (beatsPerSecond))) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
+                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * beatsPerSecond)) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
                         if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
-                            //if (currentFrame2 == 0) {sprite2.cellIndex = Math.floor(currentFrame2);
-                            //} else {
-                            currentFrame2 = (currentFrame2 + (elapsed / config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)) % (config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames ); sprite2.cellIndex = Math.floor(currentFrame2)
-                            //};
+                            currentFrame2 = (currentFrame2 + (elapsed * animationSpeed2)) % config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames; sprite2.cellIndex = Math.floor(currentFrame2)
                         } else {
                             currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
                         }
                     } else {
-                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * (beatsPerSecond)));
+                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * beatsPerSecond));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite2.cellIndex = Math.floor(currentFrame2);
@@ -3778,15 +3770,9 @@ document.addEventListener("DOMContentLoaded", function () {
             sprite1.dispose();
             currentSpriteSheetIndex1 = newSpriteSheetIndex;
             sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
+            sprite1.position = D1;
+            sprite1.cellIndex = 0
             currentFrame1 = 0
-            sprite1.cellIndex = currentFrame1;
-            sprite1.position = D1.clone();
-            const displacement = new BABYLON.Vector3(
-                0,
-                currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
-                0
-            );
-            sprite1.position.addInPlace(displacement);
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
@@ -3799,37 +3785,28 @@ document.addEventListener("DOMContentLoaded", function () {
             sprite2.dispose();
             currentSpriteSheetIndex2 = newSpriteSheetIndex;
             sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
+            sprite2.position = D2;
+            sprite2.cellIndex = 0
             currentFrame2 = 0
-            sprite2.cellIndex = currentFrame2;
-            sprite2.position = D2.clone();
-            const displacement = new BABYLON.Vector3(
-                0,
-                currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
-                0
-            );
-            sprite2.position.addInPlace(displacement);
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
     }
-    
-    
 
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = Math.max(0,performance.now());
-            
+            const currentTime = Math.max(0,audio.currentTime*1000);
             for (let entry of danceData1) {
-                if (currentTime >= entry.t && currentTime <= entry.t + entry.l && entry.l > (1000*beatDuration/32)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)/(BPM*2))) {
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime >= entry.t && currentTime <= entry.t + entry.l && entry.l > (1000*beatDuration/8)) {
+                if (currentTime >= entry.t && currentTime < entry.t + ((entry.l*config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)/(BPM*2))) {
                     switchSprite2(entry.d);
                     break;
                 }
