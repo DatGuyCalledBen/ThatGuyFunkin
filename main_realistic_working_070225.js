@@ -3609,107 +3609,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return x - Math.floor(x);
     }
     
-    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,sprite1) {
-        try {
-            // Create an offscreen canvas to analyze the sprite transparency
-            const spriteTexture = spriteManagers1[currentSpriteSheetIndex1].texture;
-            const img = new Image();
-            img.src = spriteTexture.url;
-    
-            await img.decode();
-    
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-    
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-    
-            // Get pixel data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-    
-            let lowestVisibleY = null;
-    
-            // Iterate from bottom to top to find the first visible (non-transparent) pixel
-            for (let y = canvas.height - 1; y >= 0; y--) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const index = (y * canvas.width + x) * 4;
-                    const alpha = pixels[index + 3]; // Alpha channel
-    
-                    if (alpha > 0) { // If not transparent
-                        lowestVisibleY = y;
-                        break;
-                    }
-                }
-                if (lowestVisibleY !== null) break;
-            }
-    
-            if (lowestVisibleY !== null) {
-                // Convert lowest Y pixel to world coordinates
-                const spriteHeight = spriteTexture.getBaseSize().height;
-                const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
-    
-                // Adjust position to make the non-transparent part touch y = 2.45
-                sprite1.position.y = 2.5 - offsetY;
-                console.warn('new position',sprite1.position.y)
-            }
-        } catch (error) {
-            console.error("Error adjusting sprite position:", error);
-        }
-    }
-    
-    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,sprite2) {
-        try {
-            // Create an offscreen canvas to analyze the sprite transparency
-            const spriteTexture = spriteManagers2[currentSpriteSheetIndex2].texture;
-            const img = new Image();
-            img.src = spriteTexture.url;
-    
-            await img.decode();
-    
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-    
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-    
-            // Get pixel data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-    
-            let lowestVisibleY = null;
-    
-            // Iterate from bottom to top to find the first visible (non-transparent) pixel
-            for (let y = canvas.height - 1; y >= 0; y--) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const index = (y * canvas.width + x) * 4;
-                    const alpha = pixels[index + 3]; // Alpha channel
-    
-                    if (alpha > 0) { // If not transparent
-                        lowestVisibleY = y;
-                        break;
-                    }
-                }
-                if (lowestVisibleY !== null) break;
-            }
-    
-            if (lowestVisibleY !== null) {
-                // Convert lowest Y pixel to world coordinates
-                const spriteHeight = spriteTexture.getBaseSize().height;
-                const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
-    
-                // Adjust position to make the non-transparent part touch y = 2.45
-                sprite2.position.y = 0 - offsetY;
-                console.warn('new position',sprite2.position.y)
-            }
-        } catch (error) {
-            console.error("Error adjusting sprite position:", error);
-        }
-    }
-    
-    
     // Function to validate a sprite URL by checking if it exists
     async function isSpriteValid(spriteKey) {
         const basePath = `https://thatguycalledben.com/ThatGuyFunkin/SPRITE/MIX/${spriteKey}`;
@@ -3823,6 +3722,7 @@ document.addEventListener("DOMContentLoaded", function () {
             function animate(timestamp) {
                 timestamp = performance.now();
                 let elapsed = (audio.currentTime % beatDuration);
+                console.warn('beat time elapsed:',elapsed)
 
                 if (!isLoadingNextSpriteSheet1) {
                     if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
@@ -3870,11 +3770,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error('Error starting animation:', error);
         }
     }
-    
-    var A = true
-    var B = true
 
-    async function switchSprite1(newSpriteSheetIndex) {
+    function switchSprite1(newSpriteSheetIndex) {
         try {
             if (currentSpriteSheetIndex1 === newSpriteSheetIndex) return;
 
@@ -3890,14 +3787,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite1.position.addInPlace(displacement);
-            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
-            
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
     }
 
-    async function switchSprite2(newSpriteSheetIndex) {
+    function switchSprite2(newSpriteSheetIndex) {
         try {
             if (currentSpriteSheetIndex2 === newSpriteSheetIndex) return;
 
@@ -3913,7 +3808,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite2.position.addInPlace(displacement);
-            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
