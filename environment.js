@@ -2,7 +2,16 @@ export function createScene(engine, canvas) {
     
     const scene = new BABYLON.Scene(engine);
     let BPM = window.audioBPM
-    if (BPM === undefined) {BPM = 120;
+    let initialText
+    if (BPM === undefined) {BPM = 120; initialText = 'press CTRL + F5';}
+    else {
+    initialText = window.audioFileName;
+    }
+    
+    console.warn('BPM is:',BPM)
+    const QuantisationFactor = 1/4000
+    // Default background color
+    scene.clearColor = new BABYLON.Color3(0, 0, 0);
     
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
@@ -14,34 +23,7 @@ export function createScene(engine, canvas) {
     var textureContext = dynamicTexture.getContext();
     
     // Set the initial text
-    var initialText = 'Press CTRL + F5';
-    textureContext.fillStyle = "white";
-    textureContext.font = "36px Arial";
-    textureContext.fillText(initialText, 40, 40);
     
-    // Update the dynamic texture to reflect changes
-    dynamicTexture.update();
-    
-    // Apply the dynamic texture to the plane
-    var planeMaterial = new BABYLON.StandardMaterial("planeMaterial", scene);
-    planeMaterial.diffuseTexture = dynamicTexture;
-    plane.material = planeMaterial;
-    
-    // Position and orient the plane
-    plane.position = new BABYLON.Vector3(-4.5, 5, 1.9);
-    plane.rotation = new BABYLON.Vector3(0, 0, -Math.PI/2);
-    } else {
-    // Create the plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
-    
-    // Create the dynamic texture
-    var dynamicTexture = new BABYLON.DynamicTexture("dynamicTexture", { width: 512, height: 128 }, scene);
-    
-    // Get the texture context
-    var textureContext = dynamicTexture.getContext();
-    
-    // Set the initial text
-    var initialText = window.audioFileName;
     textureContext.fillStyle = "white";
     textureContext.font = "36px Arial";
     textureContext.fillText(initialText, 40, 40);
@@ -57,14 +39,6 @@ export function createScene(engine, canvas) {
     // Position and orient the plane
     plane.position = new BABYLON.Vector3(-4.5, 5, 1.9);
     plane.rotation = new BABYLON.Vector3(0, 0, 0);
-    }
-    
-    console.warn('BPM is:',BPM)
-    const QuantisationFactor = 1/4000
-    // Default background color
-    scene.clearColor = new BABYLON.Color3(0, 0, 0);
-    
-    
     
     function createBuilding(scene, name, width, height, depth, position, color)     {
         const building = BABYLON.MeshBuilder.CreateBox(name, { width: width,     height: height, depth: depth }, scene);
@@ -536,11 +510,11 @@ particleSystem.minLifeTime = 2.0;
 particleSystem.maxLifeTime = 4.0;
 
 // Adjust emission rate for a thick fog effect
-particleSystem.emitRate = 1000;
+particleSystem.emitRate = 250*((BPM/120)**4);
 
 // Set particle speed for a slow-moving fog
-particleSystem.minEmitPower = 0.5;
-particleSystem.maxEmitPower = 1.5;
+particleSystem.minEmitPower = 7.5*((120/BPM) ** 4);
+particleSystem.maxEmitPower = 10.5*((120/BPM) ** 4);
 
 // Set the direction of the particles (randomized for fog)
 particleSystem.direction1 = new BABYLON.Vector3(-1, 1, 1);
@@ -551,10 +525,10 @@ particleSystem.color1 = new BABYLON.Color4(0.8, 0.8, 0.8, 0.5); // Light gray, s
 particleSystem.color2 = new BABYLON.Color4(0.5, 0.5, 0.5, 0.3); // Darker gray
 
 // Adjust gravity for a floating effect
-particleSystem.gravity = new BABYLON.Vector3(0, -0.2, 0);
+particleSystem.gravity = new BABYLON.Vector3(0, -0.2*((BPM/120) ** 4));
 
 // Start the particle system
-//particleSystem.start();
+particleSystem.start();
 
 
     return scene;
