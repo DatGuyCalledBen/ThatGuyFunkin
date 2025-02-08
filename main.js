@@ -1871,42 +1871,42 @@ const config = {
                     height: 1500
                 }
             ],
-            real: [
+            raeal: [
                 {
-                    url: "SPRITE/MIX/real/left_sprite_sheet.png",
-                    frames: 4,
-                    width: 1098,
-                    height: 1098
+                    url: "SPRITE/MIX/raeal/left_sprite_sheet.png",
+                    frames: 3,
+                    width: 1000,
+                    height: 857
                 },
                 {
-                    url: "SPRITE/MIX/real/down_sprite_sheet.png",
-                    frames: 4,
-                    width: 1098,
-                    height: 1098
+                    url: "SPRITE/MIX/raeal/down_sprite_sheet.png",
+                    frames: 3,
+                    width: 1000,
+                    height: 857
                 },
                 {
-                    url: "SPRITE/MIX/real/up_sprite_sheet.png",
-                    frames: 4,
-                    width: 1145,
-                    height: 1145
+                    url: "SPRITE/MIX/raeal/up_sprite_sheet.png",
+                    frames: 3,
+                    width: 1000,
+                    height: 857
                 },
                 {
-                    url: "SPRITE/MIX/real/right_sprite_sheet.png",
-                    frames: 4,
-                    width: 1098,
-                    height: 1098
+                    url: "SPRITE/MIX/raeal/right_sprite_sheet.png",
+                    frames: 3,
+                    width: 1000,
+                    height: 857
                 },
                 {
-                    url: "SPRITE/MIX/real/idle_sprite_sheet.png",
-                    frames: 10,
-                    width: 1098,
-                    height: 1098
+                    url: "SPRITE/MIX/raeal/idle_sprite_sheet.png",
+                    frames: 5,
+                    width: 857,
+                    height: 857
                 },
                 {
-                    url: "SPRITE/MIX/real/idle_sprite_sheet.png",
-                    frames: 10,
-                    width: 1098,
-                    height: 1098
+                    url: "SPRITE/MIX/raeal/idle_sprite_sheet.png",
+                    frames: 5,
+                    width: 857,
+                    height: 857
                 }
             ],
             reaver: [
@@ -3761,11 +3761,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const beatsPerSecond = (BPM/60);
     const beatDuration = (1/beatsPerSecond);
     
-    const idleSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8;
+    const idleSpeed1 = (beatsPerSecond/(config.sprites.group.raeal[4].frames))*8;
     const idleSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8;
 
     // Call spriteManagers1 function to initialize the sprite managers
-    const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
+    const spriteManagers1 = config.sprites.group.raeal.map(data => createSpriteManager1(data, scene));
 
     // Preload sprite managers for a specific character (e.g., tomguitar) within homme
     // configure to choose homme/femme based on config variable
@@ -3825,17 +3825,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 let elapsed = (audio.currentTime % beatDuration);
 
                 if (!isLoadingNextSpriteSheet1) {
-                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+                    if (currentFrame1 >= config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1) {
                         if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
                             //if (currentFrame1 == 0) {sprite1.cellIndex = Math.floor(currentFrame1);
                             //} else {
-                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)) % (config.sprites.group[vocalist][currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
+                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group.raeal[currentSpriteSheetIndex1].frames)) % (config.sprites.group.raeal[currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
                             //};
                         } else {
-                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
+                            currentFrame1 = config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
                         }
                     } else {
-                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
+                    currentFrame1 = Math.min(config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
@@ -4007,7 +4007,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function createSpriteManager1(data, scene) {
         try {
             if (!data) {
-                const idleSprite = getIdleSprite(config.sprites.group[vocalist]);
+                const idleSprite = getIdleSprite(config.sprites.group.raeal);
                 if (idleSprite) {
                     return new BABYLON.SpriteManager("spriteManager", idleSprite.url, 1, { width: idleSprite.width, height: idleSprite.height }, scene);
                 } else {

@@ -1,11 +1,36 @@
 export function createScene(engine, canvas) {
     
     const scene = new BABYLON.Scene(engine);
-    const BPM = window.audioBPM
-    const QuantisationFactor = 1/4000
-    // Default background color
-    scene.clearColor = new BABYLON.Color3(0, 0, 0);
+    let BPM = window.audioBPM
+    if (BPM === undefined) {BPM = 120;
     
+    // Create the plane
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
+    
+    // Create the dynamic texture
+    var dynamicTexture = new BABYLON.DynamicTexture("dynamicTexture", { width: 512, height: 128 }, scene);
+    
+    // Get the texture context
+    var textureContext = dynamicTexture.getContext();
+    
+    // Set the initial text
+    var initialText = 'Press CTRL + F5';
+    textureContext.fillStyle = "white";
+    textureContext.font = "36px Arial";
+    textureContext.fillText(initialText, 40, 40);
+    
+    // Update the dynamic texture to reflect changes
+    dynamicTexture.update();
+    
+    // Apply the dynamic texture to the plane
+    var planeMaterial = new BABYLON.StandardMaterial("planeMaterial", scene);
+    planeMaterial.diffuseTexture = dynamicTexture;
+    plane.material = planeMaterial;
+    
+    // Position and orient the plane
+    plane.position = new BABYLON.Vector3(-4.5, 5, 1.9);
+    plane.rotation = new BABYLON.Vector3(0, 0, -Math.PI/2);
+    } else {
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
     
@@ -32,6 +57,14 @@ export function createScene(engine, canvas) {
     // Position and orient the plane
     plane.position = new BABYLON.Vector3(-4.5, 5, 1.9);
     plane.rotation = new BABYLON.Vector3(0, 0, 0);
+    }
+    
+    console.warn('BPM is:',BPM)
+    const QuantisationFactor = 1/4000
+    // Default background color
+    scene.clearColor = new BABYLON.Color3(0, 0, 0);
+    
+    
     
     function createBuilding(scene, name, width, height, depth, position, color)     {
         const building = BABYLON.MeshBuilder.CreateBox(name, { width: width,     height: height, depth: depth }, scene);
