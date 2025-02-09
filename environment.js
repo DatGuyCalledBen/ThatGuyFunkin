@@ -500,7 +500,7 @@ const particleSystem = new BABYLON.ParticleSystem("fogParticles", 5000, scene);
 particleSystem.particleTexture = new BABYLON.Texture("https://playground.babylonjs.com/textures/particle.png", scene);
 
 // Create an emitter (position where the fog originates)
-const emitter = new BABYLON.Vector3(0, 0, 0); // Center of the scene
+const emitter = new BABYLON.Vector3(-1, 0, 0); // Center of the scene
 particleSystem.emitter = emitter;
 
 // Adjust particle size and lifetime
@@ -515,19 +515,19 @@ let particlesPerBeat = 64
 particleSystem.emitRate = particlesPerBeat / beatDuration;
 
 // Set particle speed for a slow-moving fog
-particleSystem.minEmitPower = 7.5*(Math.E**(140/BPM));
-particleSystem.maxEmitPower = 10.5*(Math.E**(140/BPM));
+particleSystem.minEmitPower = 17.5*(Math.E**(-BPM/120));
+particleSystem.maxEmitPower = 20.5*(Math.E**(-BPM/120));
 
 // Set the direction of the particles (randomized for fog)
 particleSystem.direction1 = new BABYLON.Vector3(-1, 1, 1);
 particleSystem.direction2 = new BABYLON.Vector3(1, 1, -1);
 
 // Set particle color to a moody tone
-particleSystem.color1 = new BABYLON.Color4(0.8, 0.8, 0.8, 0.5); // Light gray, semi-transparent
-particleSystem.color2 = new BABYLON.Color4(0.5, 0.5, 0.5, 0.3); // Darker gray
+particleSystem.color1 = new BABYLON.Color4(Math.random(0,1), Math.random(0,1), Math.random(0,1)); // Light gray, semi-transparent
+particleSystem.color2 = new BABYLON.Color4(Math.random(0,1), Math.random(0,1), Math.random(0,1)); // Darker gray
 
 // Adjust gravity for a floating effect
-particleSystem.gravity = new BABYLON.Vector3(0, -0.2, 0);
+particleSystem.gravity = new BABYLON.Vector3(0, -0.2*(Math.E**(-BPM/120)), 0);
 
 // Start the particle system
 particleSystem.start();
