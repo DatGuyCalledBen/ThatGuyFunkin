@@ -3586,8 +3586,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Define sprite positions
     
-    var D1 = new BABYLON.Vector3(-1, 2.5, 1);
-    var D2 = new BABYLON.Vector3(2, 0.5, 0);
+    let D1 = new BABYLON.Vector3(-1, 2.5, 1);
+    let D2 = new BABYLON.Vector3(2, 0.5, 0);
     //var D1 = new BABYLON.Vector3(-2, 2.45, -2);
     //var D2 = new BABYLON.Vector3(2, 0.5, -2);
 
@@ -3775,9 +3775,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // configure to choose char based on random list selection
 
     let sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
+    adjustSpritePosition2(spriteManagers1,4,D1)
     sprite1.position = D1;
 
     let sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
+    adjustSpritePosition2(spriteManagers2,4,D2)
     sprite2.position = D2;
 
     const audio = document.getElementById("backgroundMusic");
@@ -3874,7 +3876,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var A = true
     var B = true
 
-    async function switchSprite1(newSpriteSheetIndex) {
+    function switchSprite1(newSpriteSheetIndex) {
         try {
             if (currentSpriteSheetIndex1 === newSpriteSheetIndex) return;
 
@@ -3890,14 +3892,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite1.position.addInPlace(displacement);
-            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
-            
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
     }
 
-    async function switchSprite2(newSpriteSheetIndex) {
+    function switchSprite2(newSpriteSheetIndex) {
         try {
             if (currentSpriteSheetIndex2 === newSpriteSheetIndex) return;
 
@@ -3913,7 +3913,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite2.position.addInPlace(displacement);
-            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
