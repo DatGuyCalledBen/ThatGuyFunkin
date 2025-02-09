@@ -3871,8 +3871,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     
-    //var A = true
-    //var B = true
+    var A = true
+    var B = true
 
     async function switchSprite1(newSpriteSheetIndex) {
         try {
@@ -3890,7 +3890,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite1.position.addInPlace(displacement);
-            //if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
+            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
+            
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
@@ -3912,7 +3913,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite2.position.addInPlace(displacement);
-            //if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
+            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
