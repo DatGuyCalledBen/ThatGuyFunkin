@@ -511,7 +511,7 @@ particleSystem.maxLifeTime = 4.0;
 
 // Adjust emission rate for a thick fog effect
 let beatDuration = 60/BPM
-let particlesPerBeat = 100
+let particlesPerBeat = 64
 particleSystem.emitRate = particlesPerBeat / beatDuration;
 
 // Set particle speed for a slow-moving fog

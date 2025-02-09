@@ -3609,7 +3609,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return x - Math.floor(x);
     }
     
-    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,D1) {
+    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,sprite1) {
         try {
             // Create an offscreen canvas to analyze the sprite transparency
             const spriteTexture = spriteManagers1[currentSpriteSheetIndex1].texture;
@@ -3651,7 +3651,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
                 // Adjust position to make the non-transparent part touch y = 2.45
-                D1.position.y = 2.5 - offsetY;
+                sprite1.position.y = 2.5 - offsetY;
                 console.warn('new position',sprite1.position.y)
             }
         } catch (error) {
@@ -3659,7 +3659,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     
-    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,D2) {
+    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,sprite2) {
         try {
             // Create an offscreen canvas to analyze the sprite transparency
             const spriteTexture = spriteManagers2[currentSpriteSheetIndex2].texture;
@@ -3701,7 +3701,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
                 // Adjust position to make the non-transparent part touch y = 2.45
-                D2.position.y = 0.5 - offsetY;
+                sprite2.position.y = 0 - offsetY;
                 console.warn('new position',sprite2.position.y)
             }
         } catch (error) {
@@ -3761,11 +3761,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const beatsPerSecond = (BPM/60);
     const beatDuration = (1/beatsPerSecond);
     
-    const idleSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8;
+    const idleSpeed1 = (beatsPerSecond/(config.sprites.group.raeal[4].frames))*8;
     const idleSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8;
 
     // Call spriteManagers1 function to initialize the sprite managers
-    const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
+    const spriteManagers1 = config.sprites.group.raeal.map(data => createSpriteManager1(data, scene));
 
     // Preload sprite managers for a specific character (e.g., tomguitar) within homme
     // configure to choose homme/femme based on config variable
@@ -3825,17 +3825,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 let elapsed = (audio.currentTime % beatDuration);
 
                 if (!isLoadingNextSpriteSheet1) {
-                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+                    if (currentFrame1 >= config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1) {
                         if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
                             //if (currentFrame1 == 0) {sprite1.cellIndex = Math.floor(currentFrame1);
                             //} else {
-                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)) % (config.sprites.group[vocalist][currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
+                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group.raeal[currentSpriteSheetIndex1].frames)) % (config.sprites.group.raeal[currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
                             //};
                         } else {
-                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
+                            currentFrame1 = config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
                         }
                     } else {
-                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
+                    currentFrame1 = Math.min(config.sprites.group.raeal[currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
                     // configure to choose homme/femme based on config variable
                     // configure to choose char based on random list selection
                     sprite1.cellIndex = Math.floor(currentFrame1);
@@ -3890,7 +3890,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite1.position.addInPlace(displacement);
-            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,D1); A = false}
+            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
             
         } catch (error) {
             console.error('Error in switchSprite1:', error);
@@ -3913,7 +3913,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite2.position.addInPlace(displacement);
-            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,D2); B = false}
+            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
@@ -4007,7 +4007,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function createSpriteManager1(data, scene) {
         try {
             if (!data) {
-                const idleSprite = getIdleSprite(config.sprites.group[vocalist]);
+                const idleSprite = getIdleSprite(config.sprites.group.raeal);
                 if (idleSprite) {
                     return new BABYLON.SpriteManager("spriteManager", idleSprite.url, 1, { width: idleSprite.width, height: idleSprite.height }, scene);
                 } else {
