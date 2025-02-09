@@ -510,11 +510,13 @@ particleSystem.minLifeTime = 2.0;
 particleSystem.maxLifeTime = 4.0;
 
 // Adjust emission rate for a thick fog effect
-particleSystem.emitRate = 250*((BPM/120)**4);
+let beatDuration = 60/BPM
+let particlesPerBeat = 100
+particleSystem.emitRate = particlesPerBeat / beatDuration;
 
 // Set particle speed for a slow-moving fog
-particleSystem.minEmitPower = 7.5*((120/BPM) ** 4);
-particleSystem.maxEmitPower = 10.5*((120/BPM) ** 4);
+particleSystem.minEmitPower = 7.5*(Math.E**(140/BPM));
+particleSystem.maxEmitPower = 10.5*(Math.E**(140/BPM));
 
 // Set the direction of the particles (randomized for fog)
 particleSystem.direction1 = new BABYLON.Vector3(-1, 1, 1);
@@ -525,7 +527,7 @@ particleSystem.color1 = new BABYLON.Color4(0.8, 0.8, 0.8, 0.5); // Light gray, s
 particleSystem.color2 = new BABYLON.Color4(0.5, 0.5, 0.5, 0.3); // Darker gray
 
 // Adjust gravity for a floating effect
-particleSystem.gravity = new BABYLON.Vector3(0, -0.2*((BPM/120) ** 4));
+particleSystem.gravity = new BABYLON.Vector3(0, -0.2, 0);
 
 // Start the particle system
 particleSystem.start();

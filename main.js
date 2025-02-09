@@ -3609,7 +3609,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return x - Math.floor(x);
     }
     
-    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,sprite1) {
+    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,D1) {
         try {
             // Create an offscreen canvas to analyze the sprite transparency
             const spriteTexture = spriteManagers1[currentSpriteSheetIndex1].texture;
@@ -3651,7 +3651,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
                 // Adjust position to make the non-transparent part touch y = 2.45
-                sprite1.position.y = 2.5 - offsetY;
+                D1.position.y = 2.5 - offsetY;
                 console.warn('new position',sprite1.position.y)
             }
         } catch (error) {
@@ -3659,7 +3659,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     
-    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,sprite2) {
+    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,D2) {
         try {
             // Create an offscreen canvas to analyze the sprite transparency
             const spriteTexture = spriteManagers2[currentSpriteSheetIndex2].texture;
@@ -3701,7 +3701,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
                 // Adjust position to make the non-transparent part touch y = 2.45
-                sprite2.position.y = 0 - offsetY;
+                D2.position.y = 0.5 - offsetY;
                 console.warn('new position',sprite2.position.y)
             }
         } catch (error) {
@@ -3890,7 +3890,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite1.position.addInPlace(displacement);
-            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
+            if (A === true) {await adjustSpritePosition1(spriteManagers1,4,D1); A = false}
             
         } catch (error) {
             console.error('Error in switchSprite1:', error);
@@ -3913,7 +3913,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 0
             );
             sprite2.position.addInPlace(displacement);
-            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
+            if (B === true) {await adjustSpritePosition2(spriteManagers2,4,D2); B = false}
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
