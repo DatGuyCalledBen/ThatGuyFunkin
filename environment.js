@@ -530,7 +530,7 @@ particleSystem.color2 = new BABYLON.Color4(Math.random(0,1), Math.random(0,1), M
 particleSystem.gravity = new BABYLON.Vector3(0, -0.2*(Math.E**((135/BPM)**4)), 0);
 
 // Start the particle system
-particleSystem.start();
+// particleSystem.start();
 
 
     return scene;
