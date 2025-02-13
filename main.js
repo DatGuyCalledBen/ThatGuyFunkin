@@ -3927,7 +3927,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let t0 = 0
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = audio.currentTime/1000;
+            const currentTime = Math.max(0,performance.now());
             
             for (let entry of danceData1) {
                 if (entry.t >= t0 + l1 && currentTime <= entry.t + entry.l && entry.l >= (audio.currentTime % beatDuration)) {
