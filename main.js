@@ -3922,19 +3922,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateSpriteBasedOnTime() {
         try {
+            let l1 = audio.currentTime % beatDuration
+            let l2 = audio.currentTime % beatDuration
+            let t0 = 0
             if (!danceData1 || !isAudioStarted) return;
             
-            const currentTime = Math.max(0,performance.now());
+            const currentTime = audio.currentTime/1000;
             
             for (let entry of danceData1) {
-                if (currentTime >= entry.t && currentTime <= entry.t + entry.l && entry.l > (1000*beatDuration/32)) {
+                if (entry.t >= t0 + l1 && currentTime <= entry.t + entry.l && entry.l >= (audio.currentTime % beatDuration)) {
+                    t0 = currentTime
+                    l1 = entry.l
                     switchSprite1(entry.d);
                     break;
                 }
             }
 
             for (let entry of danceData2) {
-                if (currentTime >= entry.t && currentTime <= entry.t + entry.l && entry.l > (1000*beatDuration/8)) {
+                if (entry.t >= t0 + l2 && currentTime <= entry.t + entry.l && entry.l >= (audio.currentTime % beatDuration)) {
+                    t0 = currentTime
+                    l1 = entry.l
                     switchSprite2(entry.d);
                     break;
                 }
