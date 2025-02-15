@@ -3930,7 +3930,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let currentTime = Math.max(0,1000*audio.currentTime)
             
             for (let entry of danceData1) {
-                if (entry.t >= t0  && currentTime <= entry.t && entry.l >= (1000*beatDuration/16) && entry.l <= (1000*beatDuration)) {
+                if (entry.t >= t0  && currentTime <= entry.t && entry.l >= (1000*beatDuration/512) && entry.l <= (2000*beatDuration)) {
                     t0 = currentTime
                     //l1 = entry.l
                     switchSprite1(entry.d);
@@ -3939,7 +3939,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (entry.t >= t0  && currentTime <= entry.t && entry.l >= (1000*beatDuration/16) && entry.l <= (1000*beatDuration)) {
+                if (entry.t >= t0  && currentTime <= entry.t && entry.l >= (1000*beatDuration/16) && entry.l <= (2000*beatDuration)) {
                     t0 = currentTime
                     // = entry.l
                     switchSprite2(entry.d);
