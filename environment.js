@@ -170,51 +170,92 @@ export function createScene(engine, canvas) {
     // Define camera positions
     const cameraPositions = [
     // Theatrical angles
-    { alpha: -Math.PI / 2, beta: Math.PI / 3, radius: getRandomInt(5,25) },
-    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: getRandomInt(5,25) },
-    { alpha: -Math.PI / 3, beta: Math.PI / 3, radius: getRandomInt(5,25) },
-    { alpha: -Math.PI / 4, beta: Math.PI / 4, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 2, beta: Math.PI / 3, radius: getRandomInt(5, 25) },
+    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: getRandomInt(5, 25) },
+    { alpha: -Math.PI / 3, beta: Math.PI / 3, radius: getRandomInt(5, 25) },
+    { alpha: -Math.PI / 4, beta: Math.PI / 4, radius: getRandomInt(5, 25) },
+    
     // Close-ups on the cube
     { alpha: 0, beta: Math.PI / 2, radius: 3 },
     { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 3 },
     { alpha: Math.PI, beta: Math.PI / 2, radius: 3 },
     { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: 3 },
+    
     // Mid-range circling around the cube
     { alpha: 0, beta: Math.PI / 4, radius: 10 },
     { alpha: Math.PI / 2, beta: Math.PI / 4, radius: 10 },
     { alpha: Math.PI, beta: Math.PI / 4, radius: 10 },
     { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10 },
-    // Perched on the cone
-    { alpha: Math.PI / 4, beta: Math.PI / 4, radius: 7, position: new BABYLON.Vector3(-3, 3, -3) },
-    // Dutch angle
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: Math.PI / 6 },
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: -Math.PI / 6 },
-    // Tracking shot
-    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [new BABYLON.Vector3(0, 6, -12.5), new BABYLON.Vector3(0, 6, 2.5)] },
-    // Over-the-shoulder
-    { alpha: -Math.PI / 3, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
-    // Low angle looking up at the box
-    { alpha: Math.PI / 6, beta: 3 * Math.PI / 4, radius: 5, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
-    // High angle looking down at the box
-    { alpha: Math.PI / 3, beta: Math.PI / 6, radius: 8, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
-    // Zoom shots
-    { alpha: 0, beta: Math.PI / 2, radius: 1.5 },
-    { alpha: Math.PI, beta: Math.PI / 2, radius: 1.5 },
-    // Dolly shot
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10, dollyPath: [new BABYLON.Vector3(-10, 2.5, -2), new BABYLON.Vector3(-1.25, 2.5, 1.25), new BABYLON.Vector3(10, 2.5, -2)] },
-    // Truck shot
-    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10, truckPath: [new BABYLON.Vector3(-2, 2.5, -10), new BABYLON.Vector3(-2, 2.5, 10)] },
-    // New camera positions
-    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 10 }, // Overhead Shot
-    { alpha: 0, beta: Math.PI / 6, radius: 5 }, // Worm's Eye View
-    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 20, 5 + i / 36, Math.sin((i * Math.PI / 180) + 90) * 20)) }, // Dynamic Spiral
-    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 60, 5, Math.sin((i * Math.PI / 180) + 90) * 60)) }, // Time-lapse Orbit
-    { alpha: 0, beta: Math.PI / 2, radius: 50, zoomPath: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1] }, // Slow Zoom In/Out
-    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) }, // Tracking Shot Following an Object
-    { alpha: 0, beta: Math.PI / 4, radius: 2, position: new BABYLON.Vector3(-3, 2, 3) }, // Interior View (First-Person Perspective)
-    { alpha: Math.PI, beta: Math.PI / 4, radius: 10, position: new BABYLON.Vector3(0, 1, 0) }, // Reflection Shot
-    { alpha: 0, beta: Math.PI / 2, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 50, 10, Math.sin((i * Math.PI / 180) + 90) * 50)) }, // 360-Degree Panoramic View
+    
+    // Dutch angles
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5, 25), rotationOffset: Math.PI / 6 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5, 25), rotationOffset: -Math.PI / 6 },
+    
+    // Overhead Shot
+    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 10 },
+    
+    // Worm's Eye View
+    { alpha: 0, beta: Math.PI / 6, radius: 5 },
+    
+    // Dynamic Spiral Path
+    { 
+        alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5, 25),
+        panPath: BABYLON.Curve3.CreateCatmullRomSpline([...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 20, 5 + i / 36, Math.sin((i * Math.PI / 180) + 90) * 20)))
+    },
+    
+    // Time-lapse Orbit
+    { 
+        alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5, 25),
+        panPath: BABYLON.Curve3.CreateCatmullRomSpline([...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 60, 5, Math.sin((i * Math.PI / 180) + 90) * 60)))
+    },
+    
+    // Slow Zoom In/Out
+    { 
+        alpha: 0, beta: Math.PI / 2, radius: 50, 
+        zoomPath: {
+            frames: [0, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1],
+            keys: [
+                { frame: 0, value: 50 },
+                { frame: 120, value: 1 }
+            ],
+            easing: new BABYLON.CubicEase()
+        }
+    },
+    
+    // Tracking Shot
+    { 
+        alpha: 0, beta: Math.PI / 4, radius: 10, 
+        target: new BABYLON.Vector3(-1.25, 2.5, 1.25),
+        animation: new BABYLON.Animation("trackingShotAnimation", "position", 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE)
+    },
+    
+    // Interior View (First-Person Perspective)
+    { 
+        alpha: 0, beta: Math.PI / 4, radius: 2, 
+        position: new BABYLON.Vector3(-3, 2, 3),
+        fov: 0.8
+    },
+    
+    // Reflection Shot
+    { 
+        alpha: Math.PI, beta: Math.PI / 4, radius: 10, 
+        position: new BABYLON.Vector3(0, 1, 0),
+        mirrorTexture: new BABYLON.MirrorTexture("mirrorTexture", 1024, scene)
+    },
+    
+    // 360-Degree Panoramic View
+    { 
+        alpha: 0, beta: Math.PI / 2, radius: getRandomInt(5, 25), 
+        panPath: BABYLON.Curve3.CreateCatmullRomSpline([...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 50, 10, Math.sin((i * Math.PI / 180) + 90) * 50)))
+    },
+    
+    // VR Free Camera for Full 360 Experience
+    { 
+        type: "VRDeviceOrientationFreeCamera", 
+        position: new BABYLON.Vector3(0, 1.8, 0)
+    }
     ];
+
 
     let currentCameraIndex = 0;
     let transitionTime = (60*3 / (BPM * QuantisationFactor)); // Transition time in milliseconds
