@@ -69,7 +69,7 @@ export function createScene(engine, canvas) {
                 }
     
                 const w = (Math.random() * 10) + 5;
-                const h = (Math.random() * 50);
+                const h = (Math.random() * 100);
                 const d = (Math.random() * 10) + 5;
                 const x = i * spacing;
                 const z = j * spacing;
@@ -84,20 +84,20 @@ export function createScene(engine, canvas) {
     }
     
     // Create a neighborhood with 20 rows, 20 columns, 20 units of spacing     between buildings, a 5x5 park area, and 5 units of road width
-    createNeighborhood(scene, 20, 20, 20, 5, 5);
+    createNeighborhood(scene, 20, 20, 10, 5, 5);
 
     // Add simple geometric buildings
-    const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
-    building1.position = new BABYLON.Vector3(5, 5, 6); // Position building
-    const building1Material = new BABYLON.StandardMaterial("building1Material", scene);
-    building1Material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Dark grey
-    building1.material = building1Material;
+    //const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
+    //building1.position = new BABYLON.Vector3(5, 5, 6); // Position building
+    //const building1Material = new BABYLON.StandardMaterial("building1Material", scene);
+    //building1Material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Dark grey
+    //building1.material = building1Material;
     
-    const building2 = BABYLON.MeshBuilder.CreateBox("building2", { width: 8, height: 10, depth: 8 }, scene);
-    building2.position = new BABYLON.Vector3(9, 5, -8); // Position building
-    const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
-    building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
-    building2.material = building2Material;
+    //const building2 = BABYLON.MeshBuilder.CreateBox("building2", { width: 8, height: 10, depth: 8 }, scene);
+    //building2.position = new BABYLON.Vector3(9, 5, -8); // Position building
+    //const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
+    //building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
+    //building2.material = building2Material;
     
     
     // Add lights
@@ -105,11 +105,11 @@ export function createScene(engine, canvas) {
     hemisphericLight.intensity = 0.7;
     
     const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
-    pointLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
+    pointLight1.diffuse = new BABYLON.Color3(getRandomInt(0,1), getRandomInt(0,1), getRandomInt(0,1)); // Red light
     pointLight1.intensity = 0.5;
     
     const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
-    pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
+    pointLight2.diffuse = new BABYLON.Color3(getRandomInt(0,1), getRandomInt(0,1), getRandomInt(0,1)); // Blue light
     pointLight2.intensity = 0.5;
     // Create ground
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
