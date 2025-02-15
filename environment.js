@@ -11,7 +11,7 @@ export function createScene(engine, canvas) {
     console.warn('BPM is:',BPM)
     const QuantisationFactor = 1/4000
     // Default background color
-    scene.clearColor = new BABYLON.Color3(0, 0, 0);
+    scene.clearColor = new BABYLON.Color3(0.2, 0.2, 0.4); // A dark bluish twilight color
     
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
@@ -69,7 +69,7 @@ export function createScene(engine, canvas) {
                 }
     
                 const w = (Math.random() * 10) + 5;
-                const h = (Math.random() * 100);
+                const h = (Math.random() * 20);
                 const d = (Math.random() * 10) + 5;
                 const x = i * spacing;
                 const z = j * spacing;
@@ -104,64 +104,95 @@ export function createScene(engine, canvas) {
     const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
     hemisphericLight.intensity = 0.7;
     
-    const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
-    pointLight1.diffuse = new BABYLON.Color3(getRandomInt(0,1), getRandomInt(0,1), getRandomInt(0,1)); // Red light
-    pointLight1.intensity = 0.5;
-    
-    const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
-    pointLight2.diffuse = new BABYLON.Color3(getRandomInt(0,1), getRandomInt(0,1), getRandomInt(0,1)); // Blue light
-    pointLight2.intensity = 0.5;
-    // Create ground
-    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
-    const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey for the ground
-    ground.material = groundMaterial;
+    // Create Point Lights
+const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
+pointLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
+pointLight1.intensity = 0.5;
 
-    // Add box (stage cube)
-    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
-    box.position = new BABYLON.Vector3(-1.25, 1, 1.25); // Elevated position for the box
-    const boxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
-    boxMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
-    box.material = boxMaterial;
+const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
+pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
+pointLight2.intensity = 0.5;
 
-    // Add pyramid
-    const pyramid = BABYLON.MeshBuilder.CreateCylinder("pyramid", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 4 }, scene);
-    pyramid.position = new BABYLON.Vector3(3, 1.5, 3); // Elevated position for the pyramid
-    const pyramidMaterial = new BABYLON.StandardMaterial("pyramidMaterial", scene);
-    pyramidMaterial.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.25); // Dark grey
-    pyramid.material = pyramidMaterial;
+// Create shadow generators for point lights
+const shadowGenerator1 = new BABYLON.ShadowGenerator(1024, pointLight1);
+shadowGenerator1.usePoissonSampling = true; // Smoother shadows
+shadowGenerator1.bias = 0.0001; // Optional: to avoid shadow acne
 
-    // Add cone
-    const cone = BABYLON.MeshBuilder.CreateCylinder("cone", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 16 }, scene);
-    cone.position = new BABYLON.Vector3(-3, 1.5, -3); // Elevated position for the cone
-    const coneMaterial = new BABYLON.StandardMaterial("coneMaterial", scene);
-    coneMaterial.diffuseColor = new BABYLON.Color3(0.75, 0.75, 0.75); // Light grey
-    cone.material = coneMaterial;
-    
-    // Add massive cuboid (skyscraper)
-    const skyscraper = BABYLON.MeshBuilder.CreateBox("skyscraper", { width: 7.5, height: 20, depth: 7.5 }, scene);
-    skyscraper.position = new BABYLON.Vector3(-5.75, 10, 5.75); // Positioned     so that a quarter of it is on the ground
-    const skyscraperMaterial = new BABYLON.StandardMaterial("skyscraperMaterial"    , scene);
-    skyscraperMaterial.diffuseColor = new BABYLON.Color3(0.35, 0.35, 0.35); //     Dark grey for the skyscraper
-    skyscraper.material = skyscraperMaterial;
-    
-    
-    // Add tiny stairs
-    const stepHeight = 0.05;
-    const stepDepth = 0.1;
-    const stepWidth = 3; // Increase the width of each step
-    const numberOfSteps = Math.ceil(2 / stepHeight); // Calculate number of steps needed to cover double the height of the cube
-    
-    for (let i = 0; i < numberOfSteps; i++) {
-        const step = BABYLON.MeshBuilder.CreateBox("step" + i, { width: stepWidth, height: stepHeight, depth: stepDepth }, scene);
-        step.position = new BABYLON.Vector3(-3.5, 1.25 - (i * stepHeight), 1.75 - (i * stepDepth)); // Align steps with the cube, leave z constant and double the height
-        const stepMaterial = new BABYLON.StandardMaterial("stepMaterial" + i, scene);
-        stepMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
-        step.material = stepMaterial;
+const shadowGenerator2 = new BABYLON.ShadowGenerator(1024, pointLight2);
+shadowGenerator2.usePoissonSampling = true; // Smoother shadows
+shadowGenerator2.bias = 0.0001; // Optional: to avoid shadow acne
+
+// Create ground
+const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 150, height: 150 }, scene);
+const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey for the ground
+ground.material = groundMaterial;
+ground.receiveShadows = true; // Enable the ground to receive shadows
+shadowGenerator1.addShadowCaster(ground); // Add ground to shadow generator 1
+shadowGenerator2.addShadowCaster(ground); // Add ground to shadow generator 2
+
+// Add box (stage cube)
+const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
+box.position = new BABYLON.Vector3(-1.25, 1, 1.25); // Elevated position for the box
+const boxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
+boxMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
+box.material = boxMaterial;
+box.receiveShadows = true; // Enable the box to receive shadows
+shadowGenerator1.addShadowCaster(box); // Add box to shadow generator 1
+shadowGenerator2.addShadowCaster(box); // Add box to shadow generator 2
+
+// Add pyramid
+const pyramid = BABYLON.MeshBuilder.CreateCylinder("pyramid", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 4 }, scene);
+pyramid.position = new BABYLON.Vector3(3, 1.5, 3); // Elevated position for the pyramid
+const pyramidMaterial = new BABYLON.StandardMaterial("pyramidMaterial", scene);
+pyramidMaterial.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.25); // Dark grey
+pyramid.material = pyramidMaterial;
+pyramid.receiveShadows = true; // Enable pyramid to receive shadows
+shadowGenerator1.addShadowCaster(pyramid); // Add pyramid to shadow generator 1
+shadowGenerator2.addShadowCaster(pyramid); // Add pyramid to shadow generator 2
+
+// Add cone
+const cone = BABYLON.MeshBuilder.CreateCylinder("cone", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 16 }, scene);
+cone.position = new BABYLON.Vector3(-3, 1.5, -3); // Elevated position for the cone
+const coneMaterial = new BABYLON.StandardMaterial("coneMaterial", scene);
+coneMaterial.diffuseColor = new BABYLON.Color3(0.75, 0.75, 0.75); // Light grey
+cone.material = coneMaterial;
+cone.receiveShadows = true; // Enable cone to receive shadows
+shadowGenerator1.addShadowCaster(cone); // Add cone to shadow generator 1
+shadowGenerator2.addShadowCaster(cone); // Add cone to shadow generator 2
+
+// Add massive cuboid (skyscraper)
+const skyscraper = BABYLON.MeshBuilder.CreateBox("skyscraper", { width: 7.5, height: 20, depth: 7.5 }, scene);
+skyscraper.position = new BABYLON.Vector3(-5.75, 10, 5.75); // Positioned so that a quarter of it is on the ground
+const skyscraperMaterial = new BABYLON.StandardMaterial("skyscraperMaterial", scene);
+skyscraperMaterial.diffuseColor = new BABYLON.Color3(0.35, 0.35, 0.35); // Dark grey for the skyscraper
+skyscraper.material = skyscraperMaterial;
+skyscraper.receiveShadows = true; // Enable skyscraper to receive shadows
+shadowGenerator1.addShadowCaster(skyscraper); // Add skyscraper to shadow generator 1
+shadowGenerator2.addShadowCaster(skyscraper); // Add skyscraper to shadow generator 2
+
+// Add tiny stairs
+const stepHeight = 0.05;
+const stepDepth = 0.1;
+const stepWidth = 3; // Increase the width of each step
+const numberOfSteps = Math.ceil(2 / stepHeight); // Calculate number of steps needed to cover double the height of the cube
+
+for (let i = 0; i < numberOfSteps; i++) {
+    const step = BABYLON.MeshBuilder.CreateBox("step" + i, { width: stepWidth, height: stepHeight, depth: stepDepth }, scene);
+    step.position = new BABYLON.Vector3(-3.5, 1.25 - (i * stepHeight), 1.75 - (i * stepDepth)); // Align steps with the cube, leave z constant and double the height
+    const stepMaterial = new BABYLON.StandardMaterial("stepMaterial" + i, scene);
+    stepMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
+    step.material = stepMaterial;
 
     // Adjust position to move each step to the side
-        step.position.x += (stepWidth - 2) / 2; // Center each step along the x-axis
-    }
+    step.position.x += (stepWidth - 2) / 2; // Center each step along the x-axis
+
+    // Enable step to receive shadows
+    step.receiveShadows = true;
+    shadowGenerator1.addShadowCaster(step); // Add step to shadow generator 1
+    shadowGenerator2.addShadowCaster(step); // Add step to shadow generator 2
+}
+
 
     // Main camera setup
     const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 60, new BABYLON.Vector3(-1, 2.5, 1), scene);
