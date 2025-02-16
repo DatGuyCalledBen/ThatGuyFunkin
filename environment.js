@@ -98,7 +98,9 @@ export function createScene(engine, canvas) {
     //const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
     //building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
     //building2.material = building2Material;
-    //scene.fogMode = BABYLON.Scene.FOGMODE_EXP;  // Exponential fog for gradual darkening
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP;  // Exponential fog for gradual darkening
+    scene.ambientColor = new BABYLON.Color3(0.1, 0.1, 0.1);  // Lower ambient light to increase contrast
+
 
     
     // Add lights
@@ -110,13 +112,11 @@ export function createScene(engine, canvas) {
 // Create Directional Lights
 const directionalLight1 = new BABYLON.DirectionalLight("directionalLight1", new BABYLON.Vector3(0, -1, 0), scene);
 directionalLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
-directionalLight1.intensity = 0.5;
+directionalLight1.intensity = 10;
 
 const directionalLight2 = new BABYLON.DirectionalLight("directionalLight2", new BABYLON.Vector3(0, -1, 0), scene);
 directionalLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
-directionalLight2.intensity = 0.5;
-
-
+directionalLight2.intensity = 10;
 
 // Define constants for the movement and orbital parameters
 const lightOrbitRadius = 100;
@@ -127,7 +127,7 @@ const backgroundMaterial = new BABYLON.StandardMaterial("backgroundMaterial", sc
 // Function to update the direction, intensity, and background color
 function updateLightsPositionAndIntensity() {
     const now = new Date();  // Get the current time
-    const hours = 12;  // Hardcoded hour (e.g., 12 PM)
+    const hours = now.getHours();  // Hardcoded hour (e.g., 12 PM)
     const minutes = now.getMinutes();  // Get current minutes (0-59)
     const seconds = now.getSeconds();  // Get current seconds (0-59)
     const month = now.getMonth();  // Get current month (0-11)
@@ -200,6 +200,15 @@ shadowGenerator1.bias = 0.0001; // Optional: to avoid shadow acne
 const shadowGenerator2 = new BABYLON.ShadowGenerator(1024, directionalLight2);
 shadowGenerator2.usePoissonSampling = true; // Smoother shadows
 shadowGenerator2.bias = 0.0001; // Optional: to avoid shadow acne
+
+directionalLight1.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+directionalLight1.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+
+directionalLight2.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+directionalLight2.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+
 
 // Create ground
 const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
@@ -576,6 +585,73 @@ for (let i = 0; i < numberOfSteps; i++) {
     //spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
     //spotlight.specular = new BABYLON.Color3(1, 1, 1);
     
+// Create spotlight for moon
+var moonSpotlight = new BABYLON.SpotLight("moonSpotlight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
+moonSpotlight.diffuse = new BABYLON.Color3(0.7, 0.7, 1);  // Pale blue light for the moon
+moonSpotlight.specular = new BABYLON.Color3(1, 1, 1);  // Bright specular highlight
+
+// Define constants for the moon's orbital dynamics
+const moonOrbitRadius = 100;
+const moonOrbitSpeed = 0.1; // Speed of the moon's movement around the scene
+const maxMoonIntensity = 0.7; // Maximum moon intensity
+
+// Function to update the moon's position and intensity
+function updateMoonPositionAndIntensity() {
+    const now = new Date();  // Get the current time
+    const hours = now.getHours();  // Get current hour (0-23)
+    const minutes = now.getMinutes();  // Get current minutes (0-59)
+    const seconds = now.getSeconds();  // Get current seconds (0-59)
+    
+    // Map time to angle (using hours as the base)
+    const timeInHours = hours + minutes / 60 + seconds / 3600;  // Convert to fractional hours
+    const angle = timeInHours * (2 * Math.PI / 24);  // Map the time to a 24-hour cycle (360 degrees)
+
+    // Calculate the new position for the moon (circular motion)
+    const x = moonOrbitRadius * Math.cos(angle);  // Horizontal movement (circular orbit)
+    const z = moonOrbitRadius * Math.sin(angle);  // Horizontal movement (circular orbit)
+
+    // Update the moon's position
+    moonSpotlight.position.x = x;
+    moonSpotlight.position.z = z;
+
+    // Vertical movement based on the moon's angle (sin function for smooth up/down motion)
+    const y = 10 * Math.sin(angle);  // Vertical motion simulating moon's rise/fall
+    moonSpotlight.position.y = y;
+
+    // Adjust moon intensity based on the vertical position (moonlight intensity will be weaker when the moon is near the horizon)
+    const moonIntensity = (y + 10) / 20;  // Normalize the y value to map it to intensity (0 to 1)
+    moonSpotlight.intensity = moonIntensity * maxMoonIntensity;
+
+    // Seasonal Adjustment (Time of Year - Phases of the Moon)
+    const daysInYear = 365;
+    const dayOfYear = (new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000) % daysInYear;  // Get the day of the year
+    const moonPhaseAngle = Math.sin((dayOfYear / daysInYear) * Math.PI * 2);  // Sinusoidal pattern for waxing/waning moon phases
+
+    // Simulate the waxing and waning of the moon
+    const moonPhaseIntensity = (moonPhaseAngle + 1) / 2;  // Phase intensity between 0 (new moon) and 1 (full moon)
+
+    // Combine moon intensity with moon phase intensity
+    const finalMoonIntensity = moonSpotlight.intensity * moonPhaseIntensity;
+
+    // Apply the final moon intensity
+    moonSpotlight.intensity = finalMoonIntensity;
+
+    // Optional: Adjust moon color dynamically based on intensity or phases (colder during the new moon, bluer during the full moon)
+    const moonColor = new BABYLON.Color3(0.7, 0.7, 1).scale(moonPhaseIntensity);
+    moonSpotlight.diffuse = moonColor;
+}
+
+// Update the moon's position and intensity continuously in real time
+setInterval(updateMoonPositionAndIntensity, 1000);  // Update every second
+
+const shadowGenerator3 = new BABYLON.ShadowGenerator(1024, moonSpotlight);
+shadowGenerator3.usePoissonSampling = true; // Smoother shadows
+shadowGenerator3.bias = 0.0001; // Optional: to avoid shadow acne
+
+directionalLight1.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+directionalLight1.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+    
     // Slow Motion and Time Effects
     scene.animationGroups.forEach(group => {
         group.speedRatio = 1; // Slow motion
@@ -682,6 +758,14 @@ particleSystem.gravity = new BABYLON.Vector3(0, -0.2*(Math.E**((135/BPM)**4)), 0
 
 // Start the particle system
 // particleSystem.start();
+const ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, 1);
+ssao.radius = 0.5; // Shadow spread (higher = softer, lower = tighter)
+ssao.totalStrength = 4; // Increase for deeper occlusion
+ssao.base = 1; // Adjusts overall brightness
+
+scene.postProcessRenderPipelineManager.addPipeline(ssao);
+scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+
 
 
     return scene;
