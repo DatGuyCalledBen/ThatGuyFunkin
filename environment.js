@@ -11,7 +11,7 @@ export function createScene(engine, canvas) {
     console.warn('BPM is:',BPM)
     const QuantisationFactor = 1/4000
     // Default background color
-    scene.clearColor = new BABYLON.Color3(0.3, 0.2, 0.5); // Slightly purple twilight color
+    //scene.clearColor = new BABYLON.Color3(0.3, 0.2, 0.5); // Slightly purple twilight color
     
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
@@ -98,7 +98,8 @@ export function createScene(engine, canvas) {
     //const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
     //building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
     //building2.material = building2Material;
-    
+    //scene.fogMode = BABYLON.Scene.FOGMODE_EXP;  // Exponential fog for gradual darkening
+
     
     // Add lights
     //const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
@@ -106,22 +107,27 @@ export function createScene(engine, canvas) {
     
     // Create the two point lights that will move as one
 // Create Point Lights
-const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
-pointLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
-pointLight1.intensity = 0.5;
+// Create Directional Lights
+const directionalLight1 = new BABYLON.DirectionalLight("directionalLight1", new BABYLON.Vector3(0, -1, 0), scene);
+directionalLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
+directionalLight1.intensity = 0.5;
 
-const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
-pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
-pointLight2.intensity = 0.5;
+const directionalLight2 = new BABYLON.DirectionalLight("directionalLight2", new BABYLON.Vector3(0, -1, 0), scene);
+directionalLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
+directionalLight2.intensity = 0.5;
+
+
 
 // Define constants for the movement and orbital parameters
 const lightOrbitRadius = 100;
-const lightOrbitSpeed = 0.25; // Speed factor for movement
 
-// Function to update the position and intensity of the lights
+// Create a material for the background or sky
+const backgroundMaterial = new BABYLON.StandardMaterial("backgroundMaterial", scene);
+
+// Function to update the direction, intensity, and background color
 function updateLightsPositionAndIntensity() {
     const now = new Date();  // Get the current time
-    const hours = now.getHours();  // Get current hour (0-23)
+    const hours = 12;  // Hardcoded hour (e.g., 12 PM)
     const minutes = now.getMinutes();  // Get current minutes (0-59)
     const seconds = now.getSeconds();  // Get current seconds (0-59)
     const month = now.getMonth();  // Get current month (0-11)
@@ -131,27 +137,20 @@ function updateLightsPositionAndIntensity() {
     const timeInHours = hours + minutes / 60 + seconds / 3600;  // Convert to fractional hours
     const angle = timeInHours * (2 * Math.PI / 24);  // Map the time to a 24-hour cycle (360 degrees)
 
-    // Calculate the new position for both lights (circular motion)
-    const x = lightOrbitRadius * Math.cos(angle);  // Horizontal movement (circular orbit)
-    const z = lightOrbitRadius * Math.sin(angle);  // Horizontal movement (circular orbit)
-
-    // Update the positions of both lights (moving together as one "sun")
-    pointLight1.position.x = x + 3;  // Offset for the first light
-    pointLight1.position.z = z + 3;  // Offset for the first light
-
-    pointLight2.position.x = x - 3;  // Offset for the second light
-    pointLight2.position.z = z - 3;  // Offset for the second light
-
     // Vertical movement based on the sun's angle (sin function for smooth up/down motion)
     const y = 8 * Math.sin(angle);  // Vertical motion simulating sun's rise/fall
-    pointLight1.position.y = y;
-    pointLight2.position.y = y;
+
+    // Make the light direction point towards the origin (0, 0, 0)
+    const directionToOrigin = new BABYLON.Vector3(0, 0, 0)
+        .subtract(new BABYLON.Vector3(lightOrbitRadius * Math.cos(angle), y, lightOrbitRadius * Math.sin(angle)))
+        .normalize();
+    directionalLight1.direction = directionToOrigin;
+    directionalLight2.direction = directionToOrigin;
 
     // Adjust the intensity based on the vertical position (day-night cycle)
     const dayIntensity = (y + 8) / 16;  // Normalize the y value to map it to intensity (0 to 1)
 
     // Seasonal Adjustment (Time of Year)
-    // Earth's axial tilt is about 23.5 degrees. We'll simulate this by adjusting the sun's angle over the year.
     const daysInYear = 365;
     const dayOfYear = (new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000) % daysInYear;  // Get the day of the year
     const seasonalAngle = Math.sin((dayOfYear / daysInYear) * Math.PI * 2);  // Sinusoidal pattern for seasonal variation
@@ -160,30 +159,50 @@ function updateLightsPositionAndIntensity() {
     const seasonalIntensity = 0.5 + 0.5 * seasonalAngle;  // Values between 0 and 1, simulating the sun's strength during seasons
 
     // Combine day and seasonal intensity
-    const finalIntensity = dayIntensity * seasonalIntensity;
+    let finalIntensity = dayIntensity * seasonalIntensity * 1.5; // Increased brightness multiplier
+    finalIntensity = Math.max(finalIntensity, 0.2); // Set a minimum brightness threshold
 
     // Apply the final intensity to both lights
-    pointLight1.intensity = finalIntensity;
-    pointLight2.intensity = finalIntensity;
+    directionalLight1.intensity = finalIntensity;
+    directionalLight2.intensity = finalIntensity;
+
+    // Adjust the background color based on the sun's vertical position (day-night cycle)
+    const skyHue = Math.abs(Math.sin(angle));  // Daytime hue: transitioning from blue (day) to darker (night)
+    let skyColor = new BABYLON.Color3(skyHue, skyHue, 1 - skyHue);  // Ranges from blue (day) to dark purple (night)
+
+    // Seasonal Adjustment for Background Color
+    skyColor = new BABYLON.Color3(
+        skyColor.r * (0.7 + 0.3 * seasonalAngle) + 0.1, // Boost brightness
+        skyColor.g * (0.7 + 0.3 * seasonalAngle) + 0.1, // Boost brightness
+        skyColor.b * (0.7 + 0.3 * seasonalAngle) + 0.1  // Boost brightness
+    );
+
+    // Ensure sky color remains bright enough
+    skyColor.r = Math.min(skyColor.r, 1);
+    skyColor.g = Math.min(skyColor.g, 1);
+    skyColor.b = Math.min(skyColor.b, 1);
+
+    // Apply the seasonal color adjustments to the background
+    scene.clearColor = skyColor;
 }
 
-// Update the light position and intensity continuously in real time
-setInterval(updateLightsPositionAndIntensity, 1000*60/BPM);  // Update every second
+// Update the light position, intensity, and background color continuously in real time
+setInterval(updateLightsPositionAndIntensity, 1000);  // Update every second
 
 
 
 
 // Create shadow generators for point lights
-const shadowGenerator1 = new BABYLON.ShadowGenerator(1024, pointLight1);
+const shadowGenerator1 = new BABYLON.ShadowGenerator(1024, directionalLight1);
 shadowGenerator1.usePoissonSampling = true; // Smoother shadows
 shadowGenerator1.bias = 0.0001; // Optional: to avoid shadow acne
 
-const shadowGenerator2 = new BABYLON.ShadowGenerator(1024, pointLight2);
+const shadowGenerator2 = new BABYLON.ShadowGenerator(1024, directionalLight2);
 shadowGenerator2.usePoissonSampling = true; // Smoother shadows
 shadowGenerator2.bias = 0.0001; // Optional: to avoid shadow acne
 
 // Create ground
-const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 150, height: 150 }, scene);
+const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 1000, height: 1000 }, scene);
 const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
 groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey for the ground
 ground.material = groundMaterial;
@@ -551,9 +570,9 @@ for (let i = 0; i < numberOfSteps; i++) {
     const dof5 = new BABYLON.DepthOfFieldEffect(scene, fixedCamera5, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
     
     // Lighting Effects
-    var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
-    spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
-    spotlight.specular = new BABYLON.Color3(1, 1, 1);
+    //var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
+    //spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
+    //spotlight.specular = new BABYLON.Color3(1, 1, 1);
     //spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
     //spotlight.specular = new BABYLON.Color3(1, 1, 1);
     
@@ -616,8 +635,8 @@ for (let i = 0; i < numberOfSteps; i++) {
     // Animation for lights
     scene.registerBeforeRender(() => {
     const time = performance.now() / 1000;
-    pointLight1.intensity = 0.5 + Math.sin(time / 16) * 0.2; // Simulates flickering
-    pointLight2.intensity = 0.5 + Math.cos(time / 16) * 0.2;
+    directionalLight1.intensity = 0.5 + Math.sin(time / 16) * 0.2; // Simulates flickering
+    directionalLight2.intensity = 0.5 + Math.cos(time / 16) * 0.2;
     });
     
     function getRandomInt(min, max) {
