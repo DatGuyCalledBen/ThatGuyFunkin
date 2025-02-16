@@ -11,7 +11,7 @@ export function createScene(engine, canvas) {
     console.warn('BPM is:',BPM)
     const QuantisationFactor = 1/4000
     // Default background color
-    scene.clearColor = new BABYLON.Color3(0.2, 0.2, 0.4); // A dark bluish twilight color
+    scene.clearColor = new BABYLON.Color3(0.3, 0.2, 0.5); // Slightly purple twilight color
     
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
@@ -505,7 +505,7 @@ for (let i = 0; i < numberOfSteps; i++) {
     // Post-processing Effects
     var pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5]);
     pipeline.bloomEnabled = true;
-    pipeline.bloomThreshold = 0.1;
+    pipeline.bloomThreshold = 0.2;
     pipeline.bloomWeight = 0.8;
     pipeline.bloomKernel = 128;
     pipeline.bloomScale = 1;
