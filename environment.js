@@ -101,10 +101,11 @@ export function createScene(engine, canvas) {
     
     
     // Add lights
-    const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
-    hemisphericLight.intensity = 0.7;
+    //const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
+    //hemisphericLight.intensity = 0.7;
     
-    // Create Point Lights
+    // Create the two point lights that will move as one
+// Create Point Lights
 const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
 pointLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
 pointLight1.intensity = 0.5;
@@ -112,6 +113,65 @@ pointLight1.intensity = 0.5;
 const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
 pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
 pointLight2.intensity = 0.5;
+
+// Define constants for the movement and orbital parameters
+const lightOrbitRadius = 100;
+const lightOrbitSpeed = 0.25; // Speed factor for movement
+
+// Function to update the position and intensity of the lights
+function updateLightsPositionAndIntensity() {
+    const now = new Date();  // Get the current time
+    const hours = now.getHours();  // Get current hour (0-23)
+    const minutes = now.getMinutes();  // Get current minutes (0-59)
+    const seconds = now.getSeconds();  // Get current seconds (0-59)
+    const month = now.getMonth();  // Get current month (0-11)
+    const day = now.getDate();  // Get the current day of the month (1-31)
+
+    // Map time to angle (using hours as the base)
+    const timeInHours = hours + minutes / 60 + seconds / 3600;  // Convert to fractional hours
+    const angle = timeInHours * (2 * Math.PI / 24);  // Map the time to a 24-hour cycle (360 degrees)
+
+    // Calculate the new position for both lights (circular motion)
+    const x = lightOrbitRadius * Math.cos(angle);  // Horizontal movement (circular orbit)
+    const z = lightOrbitRadius * Math.sin(angle);  // Horizontal movement (circular orbit)
+
+    // Update the positions of both lights (moving together as one "sun")
+    pointLight1.position.x = x + 3;  // Offset for the first light
+    pointLight1.position.z = z + 3;  // Offset for the first light
+
+    pointLight2.position.x = x - 3;  // Offset for the second light
+    pointLight2.position.z = z - 3;  // Offset for the second light
+
+    // Vertical movement based on the sun's angle (sin function for smooth up/down motion)
+    const y = 8 * Math.sin(angle);  // Vertical motion simulating sun's rise/fall
+    pointLight1.position.y = y;
+    pointLight2.position.y = y;
+
+    // Adjust the intensity based on the vertical position (day-night cycle)
+    const dayIntensity = (y + 8) / 16;  // Normalize the y value to map it to intensity (0 to 1)
+
+    // Seasonal Adjustment (Time of Year)
+    // Earth's axial tilt is about 23.5 degrees. We'll simulate this by adjusting the sun's angle over the year.
+    const daysInYear = 365;
+    const dayOfYear = (new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 86400000) % daysInYear;  // Get the day of the year
+    const seasonalAngle = Math.sin((dayOfYear / daysInYear) * Math.PI * 2);  // Sinusoidal pattern for seasonal variation
+
+    // Intensity adjustment based on the day of year (simulate summer and winter)
+    const seasonalIntensity = 0.5 + 0.5 * seasonalAngle;  // Values between 0 and 1, simulating the sun's strength during seasons
+
+    // Combine day and seasonal intensity
+    const finalIntensity = dayIntensity * seasonalIntensity;
+
+    // Apply the final intensity to both lights
+    pointLight1.intensity = finalIntensity;
+    pointLight2.intensity = finalIntensity;
+}
+
+// Update the light position and intensity continuously in real time
+setInterval(updateLightsPositionAndIntensity, 1000*60/BPM);  // Update every second
+
+
+
 
 // Create shadow generators for point lights
 const shadowGenerator1 = new BABYLON.ShadowGenerator(1024, pointLight1);
