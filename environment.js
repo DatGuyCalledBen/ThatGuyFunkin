@@ -98,8 +98,8 @@ export function createScene(engine, canvas) {
     //const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
     //building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
     //building2.material = building2Material;
-    scene.fogMode = BABYLON.Scene.FOGMODE_EXP;  // Exponential fog for gradual darkening
-    scene.ambientColor = new BABYLON.Color3(0.1, 0.1, 0.1);  // Lower ambient light to increase contrast
+    //.fogMode = BABYLON.Scene.FOGMODE_EXP;  // Exponential fog for gradual darkening
+    //scene.ambientColor = new BABYLON.Color3(0.1, 0.1, 0.1);  // Lower ambient light to increase contrast
 
 
     
@@ -119,7 +119,7 @@ directionalLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
 directionalLight2.intensity = 10;
 
 // Define constants for the movement and orbital parameters
-const lightOrbitRadius = 100;
+const lightOrbitRadius = 1000;
 
 // Create a material for the background or sky
 const backgroundMaterial = new BABYLON.StandardMaterial("backgroundMaterial", scene);
@@ -187,7 +187,7 @@ function updateLightsPositionAndIntensity() {
 }
 
 // Update the light position, intensity, and background color continuously in real time
-setInterval(updateLightsPositionAndIntensity, 1000);  // Update every second
+setInterval(updateLightsPositionAndIntensity, 60/BPM);  // Update every second
 
 
 
@@ -219,13 +219,38 @@ ground.receiveShadows = true; // Enable the ground to receive shadows
 shadowGenerator1.addShadowCaster(ground); // Add ground to shadow generator 1
 shadowGenerator2.addShadowCaster(ground); // Add ground to shadow generator 2
 
-// Add box (stage cube)
+// Assume your cube (box) is already defined:
 const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
-box.position = new BABYLON.Vector3(-1.25, 1, 1.25); // Elevated position for the box
+box.position = new BABYLON.Vector3(-1.25, 1, 1.25);
 const boxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
-boxMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
+boxMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 box.material = boxMaterial;
-box.receiveShadows = true; // Enable the box to receive shadows
+box.receiveShadows = true;
+
+// Define parameters for our cinema lighting:
+const distance = 50;        // horizontal distance from cube to each spotlight
+const baseY = 0;            // y-position for the spotlights (e.g., on the ground)
+const target = box.position; // target the cube's center
+
+// Left Spotlight: placed to the left of the cube
+const leftPos = new BABYLON.Vector3(target.x, baseY, target.z - distance);
+const leftDir = target.subtract(leftPos).normalize();
+var leftSpotlight = new BABYLON.SpotLight("leftSpotlight", leftPos, leftDir, Math.PI / 4, 2, scene);
+leftSpotlight.diffuse = new BABYLON.Color3(1, 0.8, 0.6);  // warm tone
+leftSpotlight.specular = new BABYLON.Color3(1, 1, 1);
+
+// Right Spotlight: placed to the right of the cube
+const rightPos = new BABYLON.Vector3(target.x + distance, baseY, target.z);
+const rightDir = target.subtract(rightPos).normalize();
+var rightSpotlight = new BABYLON.SpotLight("rightSpotlight", rightPos, rightDir, Math.PI / 4, 2, scene);
+rightSpotlight.diffuse = new BABYLON.Color3(0.6, 0.8, 1);  // cooler tone
+rightSpotlight.specular = new BABYLON.Color3(1, 1, 1);
+
+// (Optional) Create shadow generators for each spotlight
+var shadowGeneratorLeft = new BABYLON.ShadowGenerator(1024, leftSpotlight);
+shadowGeneratorLeft.addShadowCaster(box);
+var shadowGeneratorRight = new BABYLON.ShadowGenerator(1024, rightSpotlight);
+shadowGeneratorRight.addShadowCaster(box);
 shadowGenerator1.addShadowCaster(box); // Add box to shadow generator 1
 shadowGenerator2.addShadowCaster(box); // Add box to shadow generator 2
 
@@ -258,6 +283,15 @@ skyscraper.material = skyscraperMaterial;
 skyscraper.receiveShadows = true; // Enable skyscraper to receive shadows
 shadowGenerator1.addShadowCaster(skyscraper); // Add skyscraper to shadow generator 1
 shadowGenerator2.addShadowCaster(skyscraper); // Add skyscraper to shadow generator 2
+
+shadowGeneratorLeft.addShadowCaster(skyscraper);
+shadowGeneratorLeft.addShadowCaster(pyramid);
+shadowGeneratorLeft.addShadowCaster(cone);
+shadowGeneratorLeft.addShadowCaster(ground);
+shadowGeneratorRight.addShadowCaster(skyscraper);
+shadowGeneratorRight.addShadowCaster(pyramid);
+shadowGeneratorRight.addShadowCaster(cone);
+shadowGeneratorRight.addShadowCaster(ground);
 
 // Add tiny stairs
 const stepHeight = 0.05;
@@ -648,6 +682,11 @@ const shadowGenerator3 = new BABYLON.ShadowGenerator(1024, moonSpotlight);
 shadowGenerator3.usePoissonSampling = true; // Smoother shadows
 shadowGenerator3.bias = 0.0001; // Optional: to avoid shadow acne
 
+shadowGenerator3.addShadowCaster(skyscraper);
+shadowGenerator3.addShadowCaster(pyramid);
+shadowGenerator3.addShadowCaster(cone);
+shadowGenerator3.addShadowCaster(box);
+
 directionalLight1.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
 directionalLight1.shadowMaxZ = 100;  // Adjust distance for the shadow range
 scene.shadowsEnabled = true;
@@ -758,13 +797,13 @@ particleSystem.gravity = new BABYLON.Vector3(0, -0.2*(Math.E**((135/BPM)**4)), 0
 
 // Start the particle system
 // particleSystem.start();
-const ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, 1);
-ssao.radius = 0.5; // Shadow spread (higher = softer, lower = tighter)
-ssao.totalStrength = 4; // Increase for deeper occlusion
-ssao.base = 1; // Adjusts overall brightness
+//const ssao = new BABYLON.SSAO2RenderingPipeline("ssao", scene, 1);
+//ssao.radius = 0.5; // Shadow spread (higher = softer, lower = tighter)
+//ssao.totalStrength = 4; // Increase for deeper occlusion
+//ssao.base = 1; // Adjusts overall brightness
 
-scene.postProcessRenderPipelineManager.addPipeline(ssao);
-scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+//scene.postProcessRenderPipelineManager.addPipeline(ssao);
+//scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
 
 
