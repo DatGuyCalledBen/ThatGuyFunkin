@@ -686,6 +686,7 @@ shadowGenerator3.addShadowCaster(skyscraper);
 shadowGenerator3.addShadowCaster(pyramid);
 shadowGenerator3.addShadowCaster(cone);
 shadowGenerator3.addShadowCaster(box);
+shadowGenerator3.addShadowCaster(ground);
 
 directionalLight1.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
 directionalLight1.shadowMaxZ = 100;  // Adjust distance for the shadow range

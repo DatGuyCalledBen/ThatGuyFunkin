@@ -3918,8 +3918,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
     
+    //(entry.t >= t0 + l1 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b))
+    //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
     
-
     function updateSpriteBasedOnTime() {
         try {
             let l1 = audio.currentTime % beatDuration
@@ -3934,7 +3935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let currentTime = Math.max(0,1000*audio.currentTime)
             
             for (let entry of danceData1) {
-                if (entry.t >= t0 + l1 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b)) {
+                if (entry.t >= currentTime && entry.t <= currentTime + entry.l && (entry.d != d1a || entry.d != d1b)) {
                     t0 = currentTime
                     d1b = d1a
                     d1a = entry.d
@@ -3945,7 +3946,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b)) {
+                if (entry.t >= currentTime && entry.t <= currentTime + entry.l && (entry.d != d2a || entry.d != d2b)) {
                     d2b = d2a
                     d2a = entry.d
                     t0 = currentTime
