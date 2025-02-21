@@ -699,11 +699,11 @@ scene.shadowsEnabled = true;
     
     // Post-processing Effects
     var pipeline = new BABYLON.DefaultRenderingPipeline("defaultPipeline", true, scene, [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5]);
-    pipeline.bloomEnabled = true;
-    pipeline.bloomThreshold = 0.2;
-    pipeline.bloomWeight = 0.8;
-    pipeline.bloomKernel = 128;
-    pipeline.bloomScale = 1;
+    //pipeline.bloomEnabled = true;
+    //pipeline.bloomThreshold = 0.2;
+    //pipeline.bloomWeight = 0.8;
+    //pipeline.bloomKernel = 128;
+    //pipeline.bloomScale = 1;
     
     // Switch between theatrical and fixed cameras periodically
     let useTheatricalCamera = true;

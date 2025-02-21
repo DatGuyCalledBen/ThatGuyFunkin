@@ -3761,8 +3761,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const beatsPerSecond = (BPM/60);
     const beatDuration = (1/beatsPerSecond);
     
-    const idleSpeed1 = (beatsPerSecond/(config.sprites.group[vocalist][4].frames))*8;
-    const idleSpeed2 = (beatsPerSecond/(config.sprites.group.tomSusanAssets[4].frames))*8;
+    const idleSpeed1 = (config.sprites.group[vocalist][4].frames/beatDuration);
+    const idleSpeed2 = (config.sprites.group.tomSusanAssets[4].frames/beatDuration);
 
     // Call spriteManagers1 function to initialize the sprite managers
     const spriteManagers1 = config.sprites.group[vocalist].map(data => createSpriteManager1(data, scene));
@@ -3920,22 +3920,22 @@ document.addEventListener("DOMContentLoaded", function () {
     
     //(entry.t >= t0 + l1 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b))
     //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
-    
+    //entry.t - t0 >= l1
+    //entry.t - t0 >= l2
     function updateSpriteBasedOnTime() {
         try {
-            let l1 = audio.currentTime % beatDuration
-            let l2 = audio.currentTime % beatDuration
-            let t0 = 0
+            let currentTime = Math.max(0,1000*audio.currentTime)
+            let l1 = 0
+            let l2 = 0
+            let t0 = currentTime
             let d1a
             let d1b
             let d2a
             let d2b
             if (!danceData1 || !isAudioStarted) return;
             
-            let currentTime = Math.max(0,1000*audio.currentTime)
-            
             for (let entry of danceData1) {
-                if (entry.t >= currentTime && entry.t <= currentTime + entry.l && (entry.d != d1a || entry.d != d1b)) {
+                if (currentTime <= entry.t) {
                     t0 = currentTime
                     d1b = d1a
                     d1a = entry.d
@@ -3946,7 +3946,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (entry.t >= currentTime && entry.t <= currentTime + entry.l && (entry.d != d2a || entry.d != d2b)) {
+                if (currentTime <= entry.t) {
                     d2b = d2a
                     d2a = entry.d
                     t0 = currentTime
