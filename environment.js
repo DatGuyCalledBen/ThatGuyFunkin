@@ -1,7 +1,7 @@
 export function createScene(engine, canvas) {
     
     const scene = new BABYLON.Scene(engine);
-    const BPM = window.audioBPM
+    let BPM = window.audioBPM
     const QuantisationFactor = 1/1000
     let initialText
     if (BPM === undefined) {BPM = 120; initialText = 'press CTRL + F5';}
