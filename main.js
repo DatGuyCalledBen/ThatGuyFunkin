@@ -3935,7 +3935,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!danceData1 || !isAudioStarted) return;
             
             for (let entry of danceData1) {
-                if (currentTime <= entry.t) {
+                if (currentTime <= entry.t - 1000*(currentTime % beatDuration/16) && entry.l >= (1000*beatDuration)/8) {
                     t0 = currentTime
                     d1b = d1a
                     d1a = entry.d
@@ -3946,7 +3946,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (currentTime <= entry.t) {
+                if (currentTime <= entry.t - 1000*(currentTime % beatDuration/16) && entry.l >= (1000*beatDuration)/8 {
                     d2b = d2a
                     d2a = entry.d
                     t0 = currentTime
