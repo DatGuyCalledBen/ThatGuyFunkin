@@ -3701,7 +3701,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
                 // Adjust position to make the non-transparent part touch y = 2.45
-                sprite2.position.y = 0 - offsetY;
+                sprite2.position.y = 0.5 - offsetY;
                 console.warn('new position',sprite2.position.y)
             }
         } catch (error) {
@@ -3922,9 +3922,10 @@ document.addEventListener("DOMContentLoaded", function () {
     //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
     //entry.t - t0 >= l1
     //entry.t - t0 >= l2
-    function updateSpriteBasedOnTime() {
+    var startup = true
+    async function updateSpriteBasedOnTime() {
         try {
-            let currentTime = Math.max(0,1000*audio.currentTime)
+            const currentTime = Math.max(0,performance.now());
             let l1 = 0
             let l2 = 0
             let t0 = currentTime
@@ -3933,7 +3934,11 @@ document.addEventListener("DOMContentLoaded", function () {
             let d2a
             let d2b
             if (!danceData1 || !isAudioStarted) return;
-            
+            if (startup === true) {
+                await adjustSpritePosition1(spriteManagers1,4,sprite1);
+                await adjustSpritePosition2(spriteManagers2,4,sprite2);
+                startup = false
+            }
             for (let entry of danceData1) {
                 if (currentTime <= entry.t && (entry.t - currentTime) >= 1000*beatDuration/64) {
                     t0 = currentTime

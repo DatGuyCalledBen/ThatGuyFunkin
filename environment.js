@@ -443,8 +443,10 @@ export function createScene(engine, canvas) {
     const fixedCameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
     
     // Switch cameras function now selects randomly from all fixed cameras
-    var D1 = new BABYLON.Vector3(-1, 2.5, 1)
-    var D2 = new BABYLON.Vector3(2, 0.5, 0)
+    //var D1 = new BABYLON.Vector3(-1, 2.5, 1)
+    //var D2 = new BABYLON.Vector3(2, 0.5, 0)
+    var D1 = new BABYLON.Vector3(-0.99, 2.51, 0.99)
+    var D2 = new BABYLON.Vector3(2.01, 0.51, -0.01)
     
     function switchCameras() {
         if (useTheatricalCamera) {
