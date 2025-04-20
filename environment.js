@@ -9,7 +9,7 @@ export function createScene(engine, canvas) {
     initialText = window.audioFileName;
     }
     // Default background color
-    scene.clearColor = new BABYLON.Color3(1, 1, 1);
+    scene.clearColor = new BABYLON.Color3(0, 0, 0);
     
     // Create the plane
     var plane = BABYLON.MeshBuilder.CreatePlane("plane", { size: 4 }, scene);
@@ -71,7 +71,7 @@ export function createScene(engine, canvas) {
                 const x = i * spacing;
                 const z = j * spacing;
                 const position = new BABYLON.Vector3(x, h / 2, z);
-                const color = new BABYLON.Color3(0, 0, 0);
+                const color = new BABYLON.Color3(Math.random() * 0.5, Math    .random() * 0.5, Math.random() * 0.5);
                 const building = createBuilding(scene, `building_${i}_${j}`, w,     h, d, position, color);
                 buildings.push(building);
             }
@@ -87,59 +87,59 @@ export function createScene(engine, canvas) {
     const building1 = BABYLON.MeshBuilder.CreateBox("building1", { width: 5, height: 10, depth: 5 }, scene);
     building1.position = new BABYLON.Vector3(5, 5, 6); // Position building
     const building1Material = new BABYLON.StandardMaterial("building1Material", scene);
-    building1Material.diffuseColor = new BABYLON.Color3(1,1,1);//0.3, 0.3, 0.3); // Dark grey
+    building1Material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Dark grey
     building1.material = building1Material;
     
     const building2 = BABYLON.MeshBuilder.CreateBox("building2", { width: 8, height: 10, depth: 8 }, scene);
     building2.position = new BABYLON.Vector3(9, 5, -8); // Position building
     const building2Material = new BABYLON.StandardMaterial("building2Material", scene);
-    building2Material.diffuseColor = new BABYLON.Color3(1,1,1);//0.4, 0.4, 0.4); // Medium grey
+    building2Material.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4); // Medium grey
     building2.material = building2Material;
     
     
     // Add lights
-    //const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
-    //hemisphericLight.intensity = 0.7;
+    const hemisphericLight = new BABYLON.HemisphericLight("hemisphericLight", new BABYLON.Vector3(0, 1, 0), scene);
+    hemisphericLight.intensity = 0.7;
     
     const pointLight1 = new BABYLON.PointLight("pointLight1", new BABYLON.Vector3(3, 8, 0), scene);
-    pointLight1.diffuse = new BABYLON.Color3(1, 1, 1); // Red light
+    pointLight1.diffuse = new BABYLON.Color3(1, 0, 0); // Red light
     pointLight1.intensity = 0.5;
     
     const pointLight2 = new BABYLON.PointLight("pointLight2", new BABYLON.Vector3(-2, 8, -2), scene);
-    pointLight2.diffuse = new BABYLON.Color3(0, 0, 0); // Blue light
+    pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
     pointLight2.intensity = 0.5;
     // Create ground
     const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
     const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
-    groundMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.5, 0.5, 0.5); // Medium grey for the ground
+    groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey for the ground
     ground.material = groundMaterial;
 
     // Add box (stage cube)
     const box = BABYLON.MeshBuilder.CreateBox("box", { size: 2 }, scene);
     box.position = new BABYLON.Vector3(-1.25, 1, 1.25); // Elevated position for the box
     const boxMaterial = new BABYLON.StandardMaterial("boxMaterial", scene);
-    boxMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.5, 0.5, 0.5); // Medium grey
+    boxMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
     box.material = boxMaterial;
 
     // Add pyramid
     const pyramid = BABYLON.MeshBuilder.CreateCylinder("pyramid", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 4 }, scene);
     pyramid.position = new BABYLON.Vector3(3, 1.5, 3); // Elevated position for the pyramid
     const pyramidMaterial = new BABYLON.StandardMaterial("pyramidMaterial", scene);
-    pyramidMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.25, 0.25, 0.25); // Dark grey
+    pyramidMaterial.diffuseColor = new BABYLON.Color3(0.25, 0.25, 0.25); // Dark grey
     pyramid.material = pyramidMaterial;
 
     // Add cone
     const cone = BABYLON.MeshBuilder.CreateCylinder("cone", { diameterTop: 0, diameterBottom: 2, height: 3, tessellation: 16 }, scene);
     cone.position = new BABYLON.Vector3(-3, 1.5, -3); // Elevated position for the cone
     const coneMaterial = new BABYLON.StandardMaterial("coneMaterial", scene);
-    coneMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.75, 0.75, 0.75); // Light grey
+    coneMaterial.diffuseColor = new BABYLON.Color3(0.75, 0.75, 0.75); // Light grey
     cone.material = coneMaterial;
     
     // Add massive cuboid (skyscraper)
     const skyscraper = BABYLON.MeshBuilder.CreateBox("skyscraper", { width: 7.5, height: 20, depth: 7.5 }, scene);
     skyscraper.position = new BABYLON.Vector3(-5.75, 10, 5.75); // Positioned     so that a quarter of it is on the ground
     const skyscraperMaterial = new BABYLON.StandardMaterial("skyscraperMaterial"    , scene);
-    skyscraperMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.35, 0.35, 0.35); //     Dark grey for the skyscraper
+    skyscraperMaterial.diffuseColor = new BABYLON.Color3(0.35, 0.35, 0.35); //     Dark grey for the skyscraper
     skyscraper.material = skyscraperMaterial;
     
     
@@ -153,7 +153,7 @@ export function createScene(engine, canvas) {
         const step = BABYLON.MeshBuilder.CreateBox("step" + i, { width: stepWidth, height: stepHeight, depth: stepDepth }, scene);
         step.position = new BABYLON.Vector3(-3.5, 1.25 - (i * stepHeight), 1.75 - (i * stepDepth)); // Align steps with the cube, leave z constant and double the height
         const stepMaterial = new BABYLON.StandardMaterial("stepMaterial" + i, scene);
-        stepMaterial.diffuseColor = new BABYLON.Color3(1,1,1);//0.5, 0.5, 0.5); // Medium grey
+        stepMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey
         step.material = stepMaterial;
 
     // Adjust position to move each step to the side
@@ -405,8 +405,8 @@ export function createScene(engine, canvas) {
     applyCameraShake(fixedCamera5);
     
     // Color Grading and Effects
-    scene.imageProcessingConfiguration.contrast = 2;
-    scene.imageProcessingConfiguration.exposure = 1;
+    scene.imageProcessingConfiguration.contrast = 1.6;
+    scene.imageProcessingConfiguration.exposure = 1.1;
     
     // Depth of Field (DoF)
     const dof = new BABYLON.DepthOfFieldEffect(scene, fixedCamera1, { focalLength: 50, fStop: 1.4, focusDistance: 1000, maxBlur: 2 });
@@ -419,7 +419,7 @@ export function createScene(engine, canvas) {
     var spotlight = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 10, 0), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, scene);
     //spotlight.diffuse = new BABYLON.Color3(1, 0, 0);
     //spotlight.specular = new BABYLON.Color3(1, 1, 1);
-    spotlight.diffuse = new BABYLON.Color3(0, 0, 0);
+    spotlight.diffuse = new BABYLON.Color3(Math.random(0,1), Math.random(0,1), Math.random(0,1));
     spotlight.specular = new BABYLON.Color3(1, 1, 1);
     
     // Slow Motion and Time Effects
