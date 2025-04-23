@@ -109,7 +109,7 @@ export function createScene(engine, canvas) {
     pointLight2.diffuse = new BABYLON.Color3(0, 0, 1); // Blue light
     pointLight2.intensity = 0.5;
     // Create ground
-    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 10, height: 10 }, scene);
+    const ground = BABYLON.MeshBuilder.CreateGround("ground", { width: 9, height: 9 }, scene);
     const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
     groundMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Medium grey for the ground
     ground.material = groundMaterial;
@@ -569,23 +569,6 @@ godrays.exposure = 0.3;     // control brightness
 godrays.decay = 0.95;       // how fast rays fade
 godrays.weight = 0.9;       // intensity per sample
 godrays.density = 0.96;     // tightness of shafts
-
-// load a .env HDR cube (from Babylon’s EnvironmentHelper or your own)
-const hdrTexture = new BABYLON.HDRCubeTexture(
-  "https://playground.babylonjs.com/textures/environment.hdr", // or your URL
-  scene,
-  512
-);
-scene.environmentTexture = hdrTexture;
-scene.createDefaultSkybox(hdrTexture, true, 1000);
-
-
-// convert one of your materials:
-const pbr = new BABYLON.PBRMaterial("pbr", scene);
-pbr.albedoColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-pbr.metallic = 0.2;
-pbr.roughness = 0.6;
-box.material = pbr;
 
     return scene;
 }
