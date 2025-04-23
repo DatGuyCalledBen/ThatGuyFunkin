@@ -72,7 +72,7 @@ export function createScene(engine, canvas) {
                 const z = j * spacing;
                 const position = new BABYLON.Vector3(x, h / 2, z);
                 const color = new BABYLON.Color3(Math.random() * 0.5, Math    .random() * 0.5, Math.random() * 0.5);
-                const building = createBuilding(scene, `building_${i}_${j}`, w,     h, d, position, color);
+                const building = createBuilding(scene, `building_${i}_${j}`, w, h, d, position, color);
                 buildings.push(building);
             }
         }
@@ -432,7 +432,7 @@ export function createScene(engine, canvas) {
     pipeline.bloomEnabled = true;
     pipeline.bloomThreshold = 0.1;
     pipeline.bloomWeight = 0.8;
-    pipeline.bloomKernel = 64;
+    pipeline.bloomKernel = 128;
     pipeline.bloomScale = 1;
     
     // Switch between theatrical and fixed cameras periodically
@@ -449,36 +449,6 @@ export function createScene(engine, canvas) {
     var D2 = new BABYLON.Vector3(2.01, 0.51, -0.01)
     
     function switchCameras() {
-        // Randomly decide whether to use a theatrical or fixed camera
-        const useTheatrical = Math.random() > 0.5; // Adjust threshold if needed (e.g., 0.7 for more fixed cameras)
-    
-        if (useTheatrical) {
-            scene.activeCamera = camera;
-            transitionToNextCamera(); // Transition to the next theatrical camera position
-        } else {
-            // Randomly choose between all fixed cameras
-            const randomIndex = getRandomInt(0, fixedCameras.length);
-            scene.activeCamera = fixedCameras[randomIndex];
-        }
-    
-        // Randomly choose a new target value for D
-        const targetIndex = getRandomInt(0, 5);
-        let D;
-        if (targetIndex === 0) {
-            D = D2;
-        } else {
-            D = D1;
-        }
-    
-        // Apply the new target value D to the camera
-        if (scene.activeCamera) {
-            scene.activeCamera.setTarget(D);
-        }
-    
-        setTimeout(switchCameras, switchInterval);
-    } 
-    
-    function switchCameras1() {
         if (useTheatricalCamera) {
             scene.activeCamera = camera;
             transitionToNextCamera(); // Transition to the next theatrical camera position
@@ -522,6 +492,100 @@ export function createScene(engine, canvas) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min;
     }
+
+    // Create shadow generators for point lights
+const shadowGenerator1 = new BABYLON.ShadowGenerator(1024, pointLight1);
+shadowGenerator1.usePoissonSampling = true; // Smoother shadows
+shadowGenerator1.bias = 0.0001; // Optional: to avoid shadow acne
+
+const shadowGenerator2 = new BABYLON.ShadowGenerator(1024, pointLight2);
+shadowGenerator2.usePoissonSampling = true; // Smoother shadows
+shadowGenerator2.bias = 0.0001; // Optional: to avoid shadow acne
+
+const shadowGenerator4 = new BABYLON.ShadowGenerator(1024, spotlight);
+shadowGenerator4.usePoissonSampling = true; // Smoother shadows
+shadowGenerator4.bias = 0.0001; // Optional: to avoid shadow acne
+
+pointLight1.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+pointLight1.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+
+pointLight2.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+pointLight2.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+
+spotlight.shadowMinZ = 0.1;  // Adjust to control the softness/sharpness of shadows
+spotlight.shadowMaxZ = 100;  // Adjust distance for the shadow range
+scene.shadowsEnabled = true;
+
+box.receiveShadows = true;
+pyramid.receiveShadows = true;
+cone.receiveShadows = true;
+building1.receiveShadows = true;
+building2.receiveShadows = true;
+skyscraper.receiveShadows = true;
+ground.receiveShadows = true;
+
+shadowGenerator1.addShadowCaster(box);
+shadowGenerator1.addShadowCaster(pyramid);
+shadowGenerator1.addShadowCaster(cone);
+shadowGenerator1.addShadowCaster(ground);
+shadowGenerator2.addShadowCaster(box);
+shadowGenerator2.addShadowCaster(pyramid);
+shadowGenerator2.addShadowCaster(cone);
+shadowGenerator2.addShadowCaster(ground);
+shadowGenerator4.addShadowCaster(box);
+shadowGenerator4.addShadowCaster(pyramid);
+shadowGenerator4.addShadowCaster(cone);
+shadowGenerator4.addShadowCaster(ground);
+
+shadowGenerator1.addShadowCaster(building1);
+shadowGenerator1.addShadowCaster(building2);
+shadowGenerator1.addShadowCaster(skyscraper);
+shadowGenerator2.addShadowCaster(building1);
+shadowGenerator2.addShadowCaster(building2);
+shadowGenerator2.addShadowCaster(skyscraper);
+shadowGenerator4.addShadowCaster(building1);
+shadowGenerator4.addShadowCaster(building2);
+shadowGenerator4.addShadowCaster(skyscraper);
+
+
+const ssaoRender = new BABYLON.SSAORenderingPipeline("ssao", scene, 1);
+scene.postProcessRenderPipelineManager.addPipeline(ssaoRender);
+scene.postProcessRenderPipelineManager.enableEffectInPipeline("ssao", ssaoRender.SSAOCombineRenderEffect);
+
+// attach to your spotlight (or sun-directional light)
+const godrays = new BABYLON.VolumetricLightScatteringPostProcess(
+  "godrays",    // name
+  1.0,          // ratio (full res)
+  camera,       // scene camera
+  pointLight1,    // the light source
+  100,          // sampling quality (more = smoother)
+  BABYLON.Texture.BILINEAR_SAMPLINGMODE,
+  engine,
+  false         // autoClearLens (if true, draws only on light-visible pixels)
+);
+godrays.exposure = 0.3;     // control brightness
+godrays.decay = 0.95;       // how fast rays fade
+godrays.weight = 0.9;       // intensity per sample
+godrays.density = 0.96;     // tightness of shafts
+
+// load a .env HDR cube (from Babylon’s EnvironmentHelper or your own)
+const hdrTexture = new BABYLON.HDRCubeTexture(
+  "https://playground.babylonjs.com/textures/environment.hdr", // or your URL
+  scene,
+  512
+);
+scene.environmentTexture = hdrTexture;
+scene.createDefaultSkybox(hdrTexture, true, 1000);
+
+
+// convert one of your materials:
+const pbr = new BABYLON.PBRMaterial("pbr", scene);
+pbr.albedoColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+pbr.metallic = 0.2;
+pbr.roughness = 0.6;
+box.material = pbr;
 
     return scene;
 }
