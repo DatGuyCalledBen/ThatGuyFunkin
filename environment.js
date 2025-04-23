@@ -432,7 +432,7 @@ export function createScene(engine, canvas) {
     pipeline.bloomEnabled = true;
     pipeline.bloomThreshold = 0.1;
     pipeline.bloomWeight = 0.8;
-    pipeline.bloomKernel = 128;
+    pipeline.bloomKernel = 64;
     pipeline.bloomScale = 1;
     
     // Switch between theatrical and fixed cameras periodically
@@ -449,6 +449,36 @@ export function createScene(engine, canvas) {
     var D2 = new BABYLON.Vector3(2.01, 0.51, -0.01)
     
     function switchCameras() {
+        // Randomly decide whether to use a theatrical or fixed camera
+        const useTheatrical = Math.random() > 0.5; // Adjust threshold if needed (e.g., 0.7 for more fixed cameras)
+    
+        if (useTheatrical) {
+            scene.activeCamera = camera;
+            transitionToNextCamera(); // Transition to the next theatrical camera position
+        } else {
+            // Randomly choose between all fixed cameras
+            const randomIndex = getRandomInt(0, fixedCameras.length);
+            scene.activeCamera = fixedCameras[randomIndex];
+        }
+    
+        // Randomly choose a new target value for D
+        const targetIndex = getRandomInt(0, 5);
+        let D;
+        if (targetIndex === 0) {
+            D = D2;
+        } else {
+            D = D1;
+        }
+    
+        // Apply the new target value D to the camera
+        if (scene.activeCamera) {
+            scene.activeCamera.setTarget(D);
+        }
+    
+        setTimeout(switchCameras, switchInterval);
+    } 
+    
+    function switchCameras1() {
         if (useTheatricalCamera) {
             scene.activeCamera = camera;
             transitionToNextCamera(); // Transition to the next theatrical camera position
