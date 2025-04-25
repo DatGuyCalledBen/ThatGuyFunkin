@@ -160,169 +160,250 @@ export function createScene(engine, canvas) {
         step.position.x += (stepWidth - 2) / 2; // Center each step along the x-axis
     }
 
-// ————————————————————————————————
-// GLOBAL STATE & CONFIG
-// ————————————————————————————————
-let currentCameraIndex  = 0;
-let useTheatricalCamera = true;
+    // Main camera setup
+    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 60, new BABYLON.Vector3(-1, 2.5, 1), scene);
+    camera.attachControl(canvas, true);
+    
+    // Define camera positions
+    const cameraPositions = [
+    // Theatrical angles
+    { alpha: -Math.PI / 2, beta: Math.PI / 3, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 3, beta: Math.PI / 3, radius: getRandomInt(5,25) },
+    { alpha: -Math.PI / 4, beta: Math.PI / 4, radius: getRandomInt(5,25) },
+    // Close-ups on the cube
+    { alpha: 0, beta: Math.PI / 2, radius: 3 },
+    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 3 },
+    { alpha: Math.PI, beta: Math.PI / 2, radius: 3 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 2, radius: 3 },
+    // Mid-range circling around the cube
+    { alpha: 0, beta: Math.PI / 4, radius: 10 },
+    { alpha: Math.PI / 2, beta: Math.PI / 4, radius: 10 },
+    { alpha: Math.PI, beta: Math.PI / 4, radius: 10 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10 },
+    // Perched on the cone
+    { alpha: Math.PI / 4, beta: Math.PI / 4, radius: 7, position: new BABYLON.Vector3(-3, 3, -3) },
+    // Dutch angle
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: Math.PI / 6 },
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: getRandomInt(5,25), rotationOffset: -Math.PI / 6 },
+    // Tracking shot
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [new BABYLON.Vector3(0, 6, -12.5), new BABYLON.Vector3(0, 6, 2.5)] },
+    // Over-the-shoulder
+    { alpha: -Math.PI / 3, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
+    // Low angle looking up at the box
+    { alpha: Math.PI / 6, beta: 3 * Math.PI / 4, radius: 5, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
+    // High angle looking down at the box
+    { alpha: Math.PI / 3, beta: Math.PI / 6, radius: 8, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) },
+    // Zoom shots
+    { alpha: 0, beta: Math.PI / 2, radius: 1.5 },
+    { alpha: Math.PI, beta: Math.PI / 2, radius: 1.5 },
+    // Dolly shot
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10, dollyPath: [new BABYLON.Vector3(-10, 2.5, -2), new BABYLON.Vector3(-1.25, 2.5, 1.25), new BABYLON.Vector3(10, 2.5, -2)] },
+    // Truck shot
+    { alpha: -Math.PI / 2, beta: Math.PI / 4, radius: 10, truckPath: [new BABYLON.Vector3(-2, 2.5, -10), new BABYLON.Vector3(-2, 2.5, 10)] },
+    // New camera positions
+    { alpha: Math.PI / 2, beta: Math.PI / 2, radius: 10 }, // Overhead Shot
+    { alpha: 0, beta: Math.PI / 6, radius: 5 }, // Worm's Eye View
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 20, 5 + i / 36, Math.sin((i * Math.PI / 180) + 90) * 20)) }, // Dynamic Spiral
+    { alpha: 0, beta: Math.PI / 4, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 60, 5, Math.sin((i * Math.PI / 180) + 90) * 60)) }, // Time-lapse Orbit
+    { alpha: 0, beta: Math.PI / 2, radius: 50, zoomPath: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5, 1] }, // Slow Zoom In/Out
+    { alpha: 0, beta: Math.PI / 4, radius: 10, target: new BABYLON.Vector3(-1.25, 2.5, 1.25) }, // Tracking Shot Following an Object
+    { alpha: 0, beta: Math.PI / 4, radius: 2, position: new BABYLON.Vector3(-3, 2, 3) }, // Interior View (First-Person Perspective)
+    { alpha: Math.PI, beta: Math.PI / 4, radius: 10, position: new BABYLON.Vector3(0, 1, 0) }, // Reflection Shot
+    { alpha: 0, beta: Math.PI / 2, radius: getRandomInt(5,25), panPath: [...Array(360).keys()].map(i => new BABYLON.Vector3(Math.cos((i * Math.PI / 180) + 90) * 50, 10, Math.sin((i * Math.PI / 180) + 90) * 50)) }, // 360-Degree Panoramic View
+    ];
 
-// Dummy targets
-const D1 = new BABYLON.Vector3(-0.99, 2.51, 0.99);
-const D2 = new BABYLON.Vector3( 2.01, 0.51,-0.01);
+    let currentCameraIndex = 0;
+    let transitionTime = (60*3 / (BPM * QuantisationFactor)); // Transition time in milliseconds
+    
+    // Function to smoothly transition between camera positions
+    function transitionToNextCamera() {
+        let nextPosition;
+        let nextCameraIndex;
+        
+        // Determine next camera position based on whether theatrical or fixed camera is used
+        if (useTheatricalCamera) {
+            // Select a random position from theatrical camera positions
+            const nextCameraIndex = getRandomInt(0, cameraPositions.length);
+            nextPosition = cameraPositions[nextCameraIndex];
+        } else {
+            // Select the next fixed camera in sequence
+            currentCameraIndex = (currentCameraIndex + 1) % fixedCameras.length;
+            nextPosition = {
+                alpha: fixedCameras[currentCameraIndex].alpha,
+                beta: fixedCameras[currentCameraIndex].beta,
+                radius: fixedCameras[currentCameraIndex].radius,
+                position: fixedCameras[currentCameraIndex].position,
+                rotationOffset: fixedCameras[currentCameraIndex].rotationOffset,
+                panPath: fixedCameras[currentCameraIndex].panPath,
+                dollyPath: fixedCameras[currentCameraIndex].dollyPath,
+                truckPath: fixedCameras[currentCameraIndex].truckPath
+            };
+        }
 
-// Timing (ms)
-const switchInterval = (3 * 60 / (BPM * QuantisationFactor)) * 1000;
+        if (!nextPosition) {
+            console.error('Next camera position is undefined or null.');
+            return; // Exit function early if nextPosition is invalid
+        }
+    
+        // Ensure nextPosition has necessary properties before accessing them
+        if (nextPosition.alpha !== undefined && nextPosition.beta !== undefined && nextPosition.radius !== undefined) {
+        // Store nextCameraIndex for later use
+            const animationCallback = () => {
+            currentCameraIndex = useTheatricalCamera ? nextCameraIndex : currentCameraIndex;
+            };
 
-// ————————————————————————————————
-// CAMERA SETUP
-// ————————————————————————————————
-const camera = new BABYLON.ArcRotateCamera(
-  "camera", Math.PI/4, Math.PI/4, 60,
-  new BABYLON.Vector3(-1,2.5,1), scene
-);
-camera.attachControl(canvas, true);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'alpha', getRandomInt(30,90), 1200, camera.alpha, nextPosition.alpha, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'beta', getRandomInt(150,450), 1200, camera.beta, nextPosition.beta, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation('cameraTransition', camera, 'radius', getRandomInt(45,135), 1200, camera.radius, nextPosition.radius, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, null, animationCallback);
 
-// Fixed cameras
-const fixedCameras = [
-  new BABYLON.FreeCamera("fc1", new BABYLON.Vector3(-4,3.5,-4), scene),
-  new BABYLON.FreeCamera("fc2", new BABYLON.Vector3( 4,0.5,-4), scene),
-  new BABYLON.FreeCamera("fc3", new BABYLON.Vector3( 2.5,3.5, 2.5), scene),
-  new BABYLON.FreeCamera("fc4", new BABYLON.Vector3( 2,5, -5), scene),
-  new BABYLON.FreeCamera("fc5", new BABYLON.Vector3(-2.5,0.5,-2.5), scene)
-];
-fixedCameras.forEach(applyCameraShake);
+        // Handle specific target for looking up angles or other customized targets
+        if (nextPosition.target) {
+            camera.setTarget(nextPosition.target);
+        } else {
+            camera.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25));
+        }
 
-// Theatrical presets…
-const cameraPositions = [
-  { alpha:-Math.PI/2, beta: Math.PI/3, radius:getRandomInt(5,25) },
-  /* …etc… */
-];
+        // Handle specific position for perched angles
+        if (nextPosition.position) {
+            camera.position = nextPosition.position;
+        }
 
-// ————————————————————————————————
-// TRANSITION (ArcRotateCamera)
-// ————————————————————————————————
-function transitionToNextCamera(onDone) {
-  // pick nextPos and nextIdx
-  let nextPos, nextIdx;
-  if (useTheatricalCamera) {
-    nextIdx = getRandomInt(0, cameraPositions.length);
-    nextPos = cameraPositions[nextIdx];
-  } else {
-    currentCameraIndex = (currentCameraIndex + 1) % fixedCameras.length;
-    const f = fixedCameras[currentCameraIndex];
-    nextPos = {
-      alpha: f.alpha, beta: f.beta, radius: f.radius,
-      position: f.position,
-      rotationOffset: f.rotationOffset
-    };
-  }
-  if (!nextPos || nextPos.alpha === undefined) {
-    console.error("Invalid nextPos");
-    if (onDone) onDone();
-    return;
-  }
+        // Handle rotationOffset for Dutch angles
+        if (nextPosition.rotationOffset) {
+            camera.rotationOffset = nextPosition.rotationOffset;
+        }
 
-  // clear existing tweens
-  scene.stopAnimation(camera);
-  camera.animations.length = 0;
+        // Handle panPath for tracking shots
+        if (nextPosition.panPath) {
+            // panCameraAlongPath(nextPosition.panPath);
+        }
 
-  // easing + frame counts
-  const ease        = new BABYLON.CubicEase();
-  ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
-  const sf          = 60;
-  const aFrames     = Math.max(1, Math.abs(nextPos.alpha  - camera.alpha)  * sf);
-  const bFrames     = Math.max(1, Math.abs(nextPos.beta   - camera.beta)   * sf);
-  const rFrames     = Math.max(1, Math.abs(nextPos.radius - camera.radius) * sf);
+        // Handle dollyPath for dolly shots
+        if (nextPosition.dollyPath) {
+            // panCameraAlongPath(nextPosition.dollyPath);
+        }
 
-  // alpha
-  BABYLON.Animation.CreateAndStartAnimation(
-    'a', camera, 'alpha', 60, aFrames,
-    camera.alpha, nextPos.alpha,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-    ease
-  );
-
-  // beta
-  BABYLON.Animation.CreateAndStartAnimation(
-    'b', camera, 'beta', 60, bFrames,
-    camera.beta,  nextPos.beta,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-    ease
-  );
-
-  // radius + complete
-  BABYLON.Animation.CreateAndStartAnimation(
-    'r', camera, 'radius', 60, rFrames,
-    camera.radius, nextPos.radius,
-    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-    ease,
-    () => {
-      if (useTheatricalCamera) currentCameraIndex = nextIdx;
-      panCamera(camera);
-      rotateCamera(camera);
-      onDone && onDone();
+        // Handle truckPath for truck shots
+        if (nextPosition.truckPath) {
+            // panCameraAlongPath(nextPosition.truckPath);
+        }
+    } else {
+        console.error('Next camera position is missing required properties (alpha, beta, radius).');
     }
-  );
-
-  // immediate props
-  camera.setTarget(nextPos.target || new BABYLON.Vector3(-1.25,2.5,1.25));
-  if (nextPos.position)       camera.position       = nextPos.position;
-  if (nextPos.rotationOffset !== undefined) {
-    camera.rotationOffset = nextPos.rotationOffset;
-  }
 }
 
-function applyCameraShake(cam, intensity=0.01, frequency=60) {
-  const shake = new BABYLON.Animation("shake", "position", frequency, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-  const keys = [];
-  for (let f = 0; f <= 120; f++) {
-    keys.push({
-      frame: f,
-      value: new BABYLON.Vector3(
-        cam.position.x + (Math.random()-0.5)*intensity,
-        cam.position.y + (Math.random()-0.5)*intensity,
-        cam.position.z + (Math.random()-0.5)*intensity
-      )
-    });
-  }
-  shake.setKeys(keys);
-  cam.animations.push(shake);
-  scene.beginAnimation(cam,0,120,true);
-}
 
-function getRandomInt(min, max) {
-  return Math.floor(Math.random()*(max-min)) + min;
-}
-
-// ————————————————————————————————
-// SWITCH LOGIC (runs every interval)
-// ————————————————————————————————
-function switchCameras() {
-  if (useTheatricalCamera) {
-    scene.activeCamera = camera;
-    transitionToNextCamera(() => {
-      camera.setTarget(getRandomInt(0,5) === 0 ? D2 : D1);
-    });
-  } else {
-    // fixed camera branch
-    const fc = fixedCameras[getRandomInt(0, fixedCameras.length)];
-    scene.activeCamera = fc;
-    scene.stopAnimation(fc);
-    fc.animations.length = 0;
-    const D = getRandomInt(0,5) === 0 ? D2 : D1;
-    fc.setTarget(D);
-    panCamera(fc);
-    rotateCamera(fc);
-  }
-  useTheatricalCamera = !useTheatricalCamera;
-}
-
-// kick off
-panCamera(camera);
-rotateCamera(camera);
-setInterval(switchCameras, switchInterval);
-
-
+    // Function to continuously pan the camera
+    function panCamera(camera) {
+        const animation = new BABYLON.Animation("cameraPanAnimation", "alpha", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: camera.alpha - Math.PI/2 },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.alpha - Math.PI/4}
+        ]);
+    
+        camera.animations.push(animation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
+    }
+    
+    // Function to continuously rotate the camera
+    function rotateCamera(camera) {
+        const animation = new BABYLON.Animation("cameraRotateAnimation", "beta", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        animation.setKeys([
+            { frame: 0, value: camera.beta - Math.PI/16 },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.beta - Math.PI / 8}
+        ]);
+    
+        camera.animations.push(animation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
+    }
+    
+    // Function to pan camera along a specific path
+    function panCameraAlongPath(camera, path) {
+        let pathAnimation = new BABYLON.Animation("cameraPanPathAnimation", "position", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        let keys = [];
+        for (let i = 0; i < path.length; i++) {
+            keys.push({ frame: i * (24*60/(3*BPM*QuantisationFactor) / path.length), value: path[i] });
+        }
+        pathAnimation.setKeys(keys);
+        camera.animations.push(pathAnimation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
+    }
+    
+    // Helper function to get a random integer between min (inclusive) and max (exclusive)
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+    
+    // Start initial camera movement
+    panCamera(camera);
+    rotateCamera(camera);
+    
+    // Function to apply zoom to fixed cameras
+    function applyZoomToFixedCamera(camera) {
+        const zoomAnimation = new BABYLON.Animation("fixedCameraZoomAnimation",     "radius", getRandomInt(60,180), BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        zoomAnimation.setKeys([
+            { frame: 0, value: camera.radius },
+            { frame: 24*60/(3*BPM*QuantisationFactor), value: camera.radius - 5 }
+        ]);
+        camera.animations.push(zoomAnimation);
+        scene.beginAnimation(camera, 0, 24*60/(3*BPM*QuantisationFactor), true);
+    }
+    
+    // Function to apply camera shake
+    function applyCameraShake(camera, intensity = 0.01, frequency = 60) {
+        const shakeAnimation = new BABYLON.Animation("cameraShakeAnimation", "position", frequency, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+        const keys = [];
+        for (let i = 0; i <= 12000; i += frequency) {
+            keys.push({
+                frame: i,
+                value: new BABYLON.Vector3(
+                    camera.position.x + (Math.random() - 0.5) * intensity,
+                    camera.position.y + (Math.random() - 0.5) * intensity,
+                    camera.position.z + (Math.random() - 0.5) * intensity
+                )
+            });
+        }
+        shakeAnimation.setKeys(keys);
+        camera.animations.push(shakeAnimation);
+        scene.beginAnimation(camera, 0, 6000, true);
+    }
+    
+    // Function to transition between cameras
+    function transitionToCamera(camera) {
+        scene.activeCamera = camera;
+        scene.activeCamera.attachControl(canvas, true);
+    }
+    
+    let transitionTime1 = (60 / (BPM * QuantisationFactor)); // Transition time in seconds
+    setInterval(() => {
+        const cameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
+        const randomCamera = cameras[getRandomInt(0, cameras.length-1)];
+        transitionToCamera(randomCamera);
+    }, transitionTime1 * 1000);
+    
+    // Fixed Position Cameras
+    const fixedCamera1 = new BABYLON.FreeCamera("fixedCamera1", new BABYLON.Vector3(-4, 3.5, -4), scene);
+    fixedCamera1.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera1
+    applyCameraShake(fixedCamera1);
+    
+    const fixedCamera2 = new BABYLON.FreeCamera("fixedCamera2", new BABYLON.Vector3(4, 0.5, -4), scene);
+    fixedCamera2.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera2
+    applyCameraShake(fixedCamera2);
+    
+    // Additional fixed position cameras
+    const fixedCamera3 = new BABYLON.FreeCamera("fixedCamera3", new BABYLON.Vector3(2.5, 3.5, 2.5), scene);
+    fixedCamera3.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera3
+    applyCameraShake(fixedCamera3);
+    
+    const fixedCamera4 = new BABYLON.FreeCamera("fixedCamera4", new BABYLON.Vector3(2, 5, -5), scene);
+    fixedCamera4.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera4
+    applyCameraShake(fixedCamera4);
+    
+    const fixedCamera5 = new BABYLON.FreeCamera("fixedCamera5", new BABYLON.Vector3(-2.5, 0.5, -2.5), scene);
+    fixedCamera5.setTarget(new BABYLON.Vector3(-1.25, 2.5, 1.25)); // Apply camera shake to fixedCamera5
+    applyCameraShake(fixedCamera5);
+    
     // Color Grading and Effects
     scene.imageProcessingConfiguration.contrast = 1.6;
     scene.imageProcessingConfiguration.exposure = 1.1;
@@ -353,6 +434,51 @@ setInterval(switchCameras, switchInterval);
     pipeline.bloomWeight = 0.8;
     pipeline.bloomKernel = 128;
     pipeline.bloomScale = 1;
+    
+    // Switch between theatrical and fixed cameras periodically
+    let useTheatricalCamera = true;
+    let switchInterval = (3*60/(BPM*QuantisationFactor))/1; // Switch cameras every 10ish seconds
+
+    // Array of fixed cameras
+    const fixedCameras = [fixedCamera1, fixedCamera2, fixedCamera3, fixedCamera4, fixedCamera5];
+    
+    // Switch cameras function now selects randomly from all fixed cameras
+    //var D1 = new BABYLON.Vector3(-1, 2.5, 1)
+    //var D2 = new BABYLON.Vector3(2, 0.5, 0)
+    var D1 = new BABYLON.Vector3(-0.99, 2.51, 0.99)
+    var D2 = new BABYLON.Vector3(2.01, 0.51, -0.01)
+    
+    function switchCameras() {
+        if (useTheatricalCamera) {
+            scene.activeCamera = camera;
+            transitionToNextCamera(); // Transition to the next theatrical camera position
+            setTimeout(switchCameras, switchInterval);
+        } else {
+            // Randomly choose between all fixed cameras
+            const randomIndex = getRandomInt(0, fixedCameras.length);
+            scene.activeCamera = fixedCameras[randomIndex];
+            setTimeout(switchCameras, switchInterval);
+        }
+    
+        // Randomly choose a new target value for D
+        const targetIndex = getRandomInt(0, 5);
+        let D;
+        if (targetIndex === 0) {
+            D = D2;
+        } else {
+            D = D1;
+        }
+    
+        // Apply the new target value D to the camera
+        if (scene.activeCamera) {
+            scene.activeCamera.setTarget(D);
+        }
+    
+        useTheatricalCamera = !useTheatricalCamera;
+    }
+    
+    // Start switching cameras
+    switchCameras();
 
     // Animation for lights
     scene.registerBeforeRender(() => {
