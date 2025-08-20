@@ -3922,6 +3922,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
     //entry.t - t0 >= l1
     //entry.t - t0 >= l2
+    
     var startup = true
     async function updateSpriteBasedOnTime() {
         try {
@@ -3940,7 +3941,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 startup = false
             }
             for (let entry of danceData1) {
-                if (currentTime <= entry.t && (entry.t - currentTime) >= 1000*beatDuration/64) {
+                if (currentTime * Math.random(1,1+(1/currentTime)) <= entry.t) {
                     t0 = currentTime
                     d1b = d1a
                     d1a = entry.d
@@ -3951,7 +3952,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (currentTime <= entry.t && (entry.t - currentTime) >= 1000*beatDuration/64) {
+                if (currentTime * Math.random(1,1+(1/currentTime)) <= entry.t) {
                     d2b = d2a
                     d2a = entry.d
                     t0 = currentTime
