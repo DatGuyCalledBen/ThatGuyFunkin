@@ -3941,7 +3941,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 startup = false
             }
             for (let entry of danceData1) {
-                if (currentTime * Math.random(1,1+(1/currentTime)) <= entry.t) {
+                if (entry.t >= t0 + l1/16 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b)) {
                     t0 = currentTime
                     d1b = d1a
                     d1a = entry.d
@@ -3952,10 +3952,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             for (let entry of danceData2) {
-                if (currentTime * Math.random(1,1+(1/currentTime)) <= entry.t) {
+                if (entry.t >= t0 + l2/16 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b)) {
+                    t0 = currentTime
                     d2b = d2a
                     d2a = entry.d
-                    t0 = currentTime
                     l2 = entry.l
                     switchSprite2(entry.d);
                     break;
