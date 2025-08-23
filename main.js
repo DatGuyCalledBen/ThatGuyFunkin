@@ -4317,9 +4317,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let emphasisEnd1 = 0;
     let emphasisEnd2 = 0;
     
-    const emphasisDuration = 150;     // ms main movement dominates
-    const anticipationOffset = 30;    // ms look-ahead for anticipation
-    const maxHistory = Math.ceil((BPM * ((audio.currentTime % (beatDuration/64)) / (beatDuration/64))));             // length of rolling average
+    const emphasisDuration = ((beatDuration*1000)/4);     // ms main movement dominates
+    const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
+    const maxHistory = 16;             // length of rolling average
     
     // Micro-motion config
     const microMotionRange = 0.01;    // sway range for moving (Babylon units)
