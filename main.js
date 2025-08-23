@@ -3874,104 +3874,347 @@ document.addEventListener("DOMContentLoaded", function () {
     //var A = true
     //var B = true
 
-    async function switchSprite1(newSpriteSheetIndex) {
-        try {
-            if (currentSpriteSheetIndex1 === newSpriteSheetIndex) return;
+    // async function switchSprite1(newSpriteSheetIndex) {
+    //     try {
+    //         if (currentSpriteSheetIndex1 === newSpriteSheetIndex) return;
 
-            sprite1.dispose();
+    //         sprite1.dispose();
+    //         currentSpriteSheetIndex1 = newSpriteSheetIndex;
+    //         sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
+    //         currentFrame1 = 0
+    //         sprite1.cellIndex = currentFrame1;
+    //         sprite1.position = D1.clone();
+    //         const displacement = new BABYLON.Vector3(
+    //             0,
+    //             currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
+    //             0
+    //         );
+    //         sprite1.position.addInPlace(displacement);
+    //         //if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
+    //     } catch (error) {
+    //         console.error('Error in switchSprite1:', error);
+    //     }
+    // }
+
+    // async function switchSprite2(newSpriteSheetIndex) {
+    //     try {
+    //         if (currentSpriteSheetIndex2 === newSpriteSheetIndex) return;
+
+    //         sprite2.dispose();
+    //         currentSpriteSheetIndex2 = newSpriteSheetIndex;
+    //         sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
+    //         currentFrame2 = 0
+    //         sprite2.cellIndex = currentFrame2;
+    //         sprite2.position = D2.clone();
+    //         const displacement = new BABYLON.Vector3(
+    //             0,
+    //             currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
+    //             0
+    //         );
+    //         sprite2.position.addInPlace(displacement);
+    //         //if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
+    //     } catch (error) {
+    //         console.error('Error in switchSprite2:', error);
+    //     }
+    // }
+    
+    // //(entry.t >= t0 + l1 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b))
+    // //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
+    // //entry.t - t0 >= l1
+    // //entry.t - t0 >= l2
+    
+    // //(currentTime <= entry.t && (currentTime % (1000*beatDuration)*(1/8) <= (1000*beatDuration)*(1/16) || currentTime % (1000*beatDuration)*(1/8) >= (1000*beatDuration)*(15/16)))
+    // //currentTime <= entry.t + entry.l
+    // //currentTime <= entry.t && (entry.t - currentTime) >= 1000*beatDuration/64
+    
+    
+    // var startup = true
+    // async function updateSpriteBasedOnTime() {
+    //     try {
+    //         const currentTime = Math.max(0,performance.now());
+    //         let l1 = 0
+    //         let l2 = 0
+    //         let t0 = currentTime
+    //         let d1a
+    //         let d1b
+    //         let d2a
+    //         let d2b
+    //         if (!danceData1 || !isAudioStarted) return;
+    //         if (startup === true) {
+    //             await adjustSpritePosition1(spriteManagers1,4,sprite1);
+    //             await adjustSpritePosition2(spriteManagers2,4,sprite2);
+    //             startup = false
+    //         }
+    //         for (let entry of danceData1) {
+    //             if (currentTime <= entry.t + entry.l) {
+    //                 t0 = currentTime
+    //                 d1b = d1a
+    //                 d1a = entry.d
+    //                 l1 = entry.l
+    //                 switchSprite1(entry.d);
+    //                 break;
+    //             }
+    //         }
+
+    //         for (let entry of danceData2) {
+    //             if (currentTime <= entry.t + entry.l) {
+    //                 d2b = d2a
+    //                 d2a = entry.d
+    //                 t0 = currentTime
+    //                 l2 = entry.l
+    //                 switchSprite2(entry.d);
+    //                 break;
+    //             }
+    //         }
+
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+
+    // function validateDanceData(data) {
+    //     try {
+    //         if (!Array.isArray(data)) {
+    //             throw new Error('Dance data is not an array');
+    //         }
+
+    //         const validatedData = data.filter(entry => {
+    //             if (!entry || typeof entry !== 'object') {
+    //                 console.warn('Invalid entry in dance data:', entry);
+    //                 return false;
+    //             }
+    //             if (typeof entry.t !== 'number' || typeof entry.d !== 'number' || typeof entry.l !== 'number') {
+    //                 console.warn('Invalid data type in entry:', entry);
+    //                 return false;
+    //             }
+    //             return true;
+    //         });
+
+    //         if (validatedData.length !== data.length) {
+    //             console.warn('Some entries in dance data were invalid');
+    //         }
+
+    //         return validatedData;
+    //     } catch (error) {
+    //         console.error('Error in validateDanceData:', error);
+    //         return [];
+    //     }
+    // }
+    
+    function switchSprite1(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
+        try {
+            if (currentSpriteSheetIndex1 === newSpriteSheetIndex && sprite1) {
+                // Same sheet → just update position + offsets
+                sprite1.position = D1.clone();
+    
+                // Base displacement (up/down emphasis)
+                const displacement = new BABYLON.Vector3(
+                    0,
+                    currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
+                    0
+                );
+                sprite1.position.addInPlace(displacement);
+    
+                // Micro-motion offsets (breathing / jitter)
+                sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+                return;
+            }
+    
+            // Switching to a new spritesheet → dispose and recreate
+            if (sprite1) sprite1.dispose();
             currentSpriteSheetIndex1 = newSpriteSheetIndex;
             sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
-            currentFrame1 = 0
+            currentFrame1 = 0;
             sprite1.cellIndex = currentFrame1;
+    
+            // Reset to base position
             sprite1.position = D1.clone();
+    
+            // Base displacement (up/down emphasis)
             const displacement = new BABYLON.Vector3(
                 0,
-                currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
+                currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
                 0
             );
             sprite1.position.addInPlace(displacement);
-            //if (A === true) {await adjustSpritePosition1(spriteManagers1,4,sprite1); A = false}
+    
+            // Micro-motion offsets (breathing / jitter)
+            sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    
         } catch (error) {
             console.error('Error in switchSprite1:', error);
         }
     }
 
-    async function switchSprite2(newSpriteSheetIndex) {
-        try {
-            if (currentSpriteSheetIndex2 === newSpriteSheetIndex) return;
 
-            sprite2.dispose();
+    function switchSprite2(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
+        try {
+            if (currentSpriteSheetIndex2 === newSpriteSheetIndex && sprite2) {
+                // Just update position with micro-offset if already same sprite
+                sprite2.position = D2.clone();
+    
+                // Base displacement (up/down emphasis)
+                const displacement = new BABYLON.Vector3(
+                    0,
+                    currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
+                    0
+                );
+                sprite2.position.addInPlace(displacement);
+    
+                // Micro-motion offsets (breathing / jitter)
+                sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+                return;
+            }
+    
+            // Dispose and replace sprite if switching to a new spritesheet
+            if (sprite2) sprite2.dispose();
             currentSpriteSheetIndex2 = newSpriteSheetIndex;
             sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
-            currentFrame2 = 0
+            currentFrame2 = 0;
             sprite2.cellIndex = currentFrame2;
+    
+                // Reset to base position
             sprite2.position = D2.clone();
+    
+            // Base displacement (up/down emphasis)
             const displacement = new BABYLON.Vector3(
-                0,
-                currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0, // Down (-1) or Up (+1)
-                0
+                    0,
+                currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
+                    0
             );
             sprite2.position.addInPlace(displacement);
-            //if (B === true) {await adjustSpritePosition2(spriteManagers2,4,sprite2); B = false}
+    
+            // Micro-motion offsets (breathing / jitter)
+            sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    
         } catch (error) {
             console.error('Error in switchSprite2:', error);
         }
     }
     
-    //(entry.t >= t0 + l1 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d1a || entry.d != d1b))
-    //(entry.t >= t0 + l2 && currentTime <= entry.t && entry.l % 1000*beatDuration/32 <= 1000*beatDuration*(1/64) && (entry.d != d2a || entry.d != d2b))
-    //entry.t - t0 >= l1
-    //entry.t - t0 >= l2
-    
-    //(currentTime <= entry.t && (currentTime % (1000*beatDuration)*(1/8) <= (1000*beatDuration)*(1/16) || currentTime % (1000*beatDuration)*(1/8) >= (1000*beatDuration)*(15/16)))
-    //currentTime <= entry.t + entry.l
-    //currentTime <= entry.t && (entry.t - currentTime) >= 1000*beatDuration/64
-    
-    
-    var startup = true
-    async function updateSpriteBasedOnTime() {
-        try {
-            const currentTime = Math.max(0,performance.now());
-            let l1 = 0
-            let l2 = 0
-            let t0 = currentTime
-            let d1a
-            let d1b
-            let d2a
-            let d2b
-            if (!danceData1 || !isAudioStarted) return;
-            if (startup === true) {
-                await adjustSpritePosition1(spriteManagers1,4,sprite1);
-                await adjustSpritePosition2(spriteManagers2,4,sprite2);
-                startup = false
-            }
-            for (let entry of danceData1) {
-                if (currentTime <= entry.t + entry.l) {
-                    t0 = currentTime
-                    d1b = d1a
-                    d1a = entry.d
-                    l1 = entry.l
-                    switchSprite1(entry.d);
-                    break;
-                }
-            }
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !isAudioStarted) return;
+            
+    //         let currentTime = Math.max(0,performance.now());
+            
+    //         for (let entry of danceData1) {
+    //             let currentTime = Math.max(0,performance.now());
+    //             if (currentTime <= entry.t) {
+    //                 switchSprite1(entry.d);
+    //                 break;
+    //             }
+    //         }
 
-            for (let entry of danceData2) {
-                if (currentTime <= entry.t + entry.l) {
-                    d2b = d2a
-                    d2a = entry.d
-                    t0 = currentTime
-                    l2 = entry.l
-                    switchSprite2(entry.d);
-                    break;
-                }
-            }
+    //         for (let entry of danceData2) {
+    //             let currentTime = Math.max(0,performance.now());
+    //             if (currentTime <= entry.t) {
+    //                 switchSprite2(entry.d);
+    //                 break;
+    //             }
+    //         }
 
-            setTimeout(updateSpriteBasedOnTime, 0);
-        } catch (error) {
-            console.error('Error in updateSpriteBasedOnTime:', error);
-        }
-    }
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+    
+
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    
+    //         // Use a single timestamp reference for both datasets
+    //         let currentTime = performance.now();
+    
+    //         function findNearestEntry(data, time) {
+    //             return data.reduce((nearest, entry) => {
+    //                 return (Math.abs(entry.t - time) < Math.abs(nearest.t - time))
+    //                     ? entry
+    //                     : nearest;
+    //             });
+    //         }
+    
+    //         let nearest1 = findNearestEntry(danceData1, currentTime);
+    //         let nearest2 = findNearestEntry(danceData2, currentTime);
+    
+    //         if (nearest1) switchSprite1(nearest1.d);
+    //         if (nearest2) switchSprite2(nearest2.d);
+    
+    //         // Schedule next update
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+    
+    // let lastSprite1 = null;
+    // let lastSprite2 = null;
+    // let lastSwitchTime1 = 0;
+    // let lastSwitchTime2 = 0;
+    
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    
+    //         let currentTime = performance.now();
+    
+    //         function findNearestEntry(data, time) {
+    //             return data.reduce((nearest, entry) => {
+    //                 return (Math.abs(entry.t - time) < Math.abs(nearest.t - time))
+    //                     ? entry
+    //                     : nearest;
+    //             });
+    //         }
+    
+    //         // Tweened switch
+    //         function smoothSwitch(entry, lastSprite, lastSwitchTime, switchFn) {
+    //             if (!entry) return { lastSprite, lastSwitchTime };
+    
+    //             let now = performance.now();
+    //             const minGap = 80; // ms
+    //             if (now - lastSwitchTime < minGap) {
+    //                 return { lastSprite, lastSwitchTime };
+    //             }
+    
+    //             if (lastSprite === entry.d) return { lastSprite, lastSwitchTime };
+    
+    //             // If your spritesheet is organized by numeric frames, we can tween:
+    //             let startFrame = lastSprite ?? entry.d;
+    //             let endFrame = entry.d;
+    
+    //             let steps = 3;         // number of in-betweens
+    //             let stepTime = 30;     // ms per step
+    //             let diff = endFrame - startFrame;
+    //             let dir = diff === 0 ? 0 : diff / Math.abs(diff); // +1 or -1 direction
+    
+    //             for (let i = 1; i <= steps; i++) {
+    //                 setTimeout(() => {
+    //                     let tweenFrame = startFrame + dir * Math.round((i / steps) * Math.abs(diff));
+    //                     switchFn(tweenFrame);
+    //                 }, i * stepTime);
+    //             }
+    
+    //             return { lastSprite: entry.d, lastSwitchTime: now };
+    //         }
+    
+    //         let nearest1 = findNearestEntry(danceData1, currentTime);
+    //         let nearest2 = findNearestEntry(danceData2, currentTime);
+    
+    //         ({ lastSprite: lastSprite1, lastSwitchTime: lastSwitchTime1 } =
+    //             smoothSwitch(nearest1, lastSprite1, lastSwitchTime1, switchSprite1));
+    
+    //         ({ lastSprite: lastSprite2, lastSwitchTime: lastSwitchTime2 } =
+    //             smoothSwitch(nearest2, lastSprite2, lastSwitchTime2, switchSprite2));
+    
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+
 
     function validateDanceData(data) {
         try {
@@ -3999,6 +4242,188 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error('Error in validateDanceData:', error);
             return [];
+        }
+    }
+    
+    // let lastSprite1 = 4;
+    // let lastSprite2 = 4;
+    // let mainEntry1 = null;
+    // let mainEntry2 = null;
+    // let emphasisEnd1 = 0;
+    // let emphasisEnd2 = 0;
+    
+    // const emphasisDuration = BPM; // ms
+    
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    
+    //         let currentTime = performance.now();
+    
+    //         function findNearestEntry(data, time) {
+    //             return data.reduce((nearest, entry) => {
+    //                 return (Math.abs(entry.t - time) < Math.abs(nearest.t - time))
+    //                     ? entry
+    //                     : nearest;
+    //             });
+    //         }
+    
+    //         function applyEntry(entry, lastSprite, mainEntry, emphasisEnd, switchFn) {
+    //             let now = performance.now();
+    
+    //             // If main movement is still active, keep it
+    //             if (mainEntry !== null && now < emphasisEnd) {
+    //                 switchFn(mainEntry);
+    //                 return { lastSprite, mainEntry, emphasisEnd };
+    //             }
+    
+    //             // Pick nearest entry
+    //             if (entry && entry.d !== lastSprite) {
+    //                 // Only emphasize non-idle moves
+    //                 if (entry.d >= 0 && entry.d <= 3) {
+    //                     mainEntry = entry.d;
+    //                     emphasisEnd = now + emphasisDuration;
+    //                 } else {
+    //                     mainEntry = null; // idle, no emphasis
+    //                 }
+    
+    //                 lastSprite = entry.d;
+    //                 switchFn(entry.d);
+    //             }
+    
+    //             return { lastSprite, mainEntry, emphasisEnd };
+    //         }
+    
+    //         let nearest1 = findNearestEntry(danceData1, currentTime);
+    //         let nearest2 = findNearestEntry(danceData2, currentTime);
+    
+    //         ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
+    //             applyEntry(nearest1, lastSprite1, mainEntry1, emphasisEnd1, switchSprite1));
+    
+    //         ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
+    //             applyEntry(nearest2, lastSprite2, mainEntry2, emphasisEnd2, switchSprite2));
+    
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+    let history1 = [];
+    let history2 = [];
+    let lastSprite1 = 4;
+    let lastSprite2 = 4;
+    let mainEntry1 = null;
+    let mainEntry2 = null;
+    let emphasisEnd1 = 0;
+    let emphasisEnd2 = 0;
+    
+    const emphasisDuration = 150;     // ms main movement dominates
+    const anticipationOffset = 30;    // ms look-ahead for anticipation
+    const maxHistory = Math.min(1 + Math.round(BPM * ((audio.currentTime % beatDuration) / beatDuration)),1000);             // length of rolling average
+    
+    // Micro-motion config
+    const microMotionRange = 0.01;    // sway range for moving (Babylon units)
+    const idleDriftRange   = 0.005;   // sway range for idle (Babylon units)
+    const idleDriftSpeed   = 0.002;   // speed of sine drift
+    
+    function updateSpriteBasedOnTime() {
+        try {
+            if (!danceData1 || !danceData2 || !isAudioStarted) return;
+            let currentTime = performance.now();
+    
+            function rollingAverage(newValue, history) {
+                history.push(newValue);
+                if (history.length > maxHistory) history.shift();
+                return history.reduce((a,v)=>a+v,0)/history.length;
+            }
+    
+            function findNearestEntry(data, time) {
+                return data.reduce((nearest, entry) =>
+                    Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
+                );
+            }
+    
+            function lookAhead(data, time, window=100) {
+                return data.find(e => e.t > time && e.t <= time + window);
+            }
+    
+            function getMicroOffsets(isIdle, now) {
+                if (isIdle) {
+                    // idle drift = smooth sine wave
+                    return {
+                        x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
+                        y: Math.cos(now * idleDriftSpeed) * idleDriftRange
+                    };
+                } else {
+                    // active micro jitter
+                    return {
+                        x: (Math.random() - 0.5) * microMotionRange,
+                        y: (Math.random() - 0.5) * microMotionRange
+                    };
+                }
+            }
+    
+            function applyEntry(entry, history, lastSprite, mainEntry, emphasisEnd, switchFn) {
+                let now = performance.now();
+    
+                // rolling avg direction
+                rollingAverage(entry.d, history);
+    
+                // look ahead for anticipation
+                let upcoming = lookAhead(danceData1, currentTime + anticipationOffset);
+                let target = entry.d;
+                if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
+                    target = Math.round((entry.d + upcoming.d) / 2);
+                }
+    
+                // maintain emphasis if active
+                if (mainEntry !== null && now < emphasisEnd) {
+                    let offsets = getMicroOffsets(mainEntry >= 4, now);
+                    switchFn(mainEntry, offsets.x, offsets.y);
+                    return { lastSprite, mainEntry, emphasisEnd };
+                }
+    
+                // if changed, emphasize or idle
+                if (entry.d !== lastSprite) {
+                    if (entry.d >= 0 && entry.d <= 3) {
+                        mainEntry = entry.d;
+                        emphasisEnd = now + emphasisDuration;
+                    } else {
+                        mainEntry = null;
+                    }
+    
+                    // small easing transition: halfway to target first
+                    const offsets = getMicroOffsets(entry.d >= 4, now);
+                    setTimeout(() => switchFn(target, offsets.x, offsets.y), 30);
+                    setTimeout(() => {
+                        let finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
+                        switchFn(entry.d, finalOffsets.x, finalOffsets.y);
+                    }, 60);
+    
+                    lastSprite = entry.d;
+                } else {
+                    // apply micro motion even if idle/repeated
+                    let offsets = getMicroOffsets(entry.d >= 4, now);
+                    switchFn(entry.d, offsets.x, offsets.y);
+                }
+    
+                return { lastSprite, mainEntry, emphasisEnd };
+            }
+    
+            // Anticipatory nearest entries
+            let nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
+            let nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
+    
+            ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
+                applyEntry(nearest1, history1, lastSprite1, mainEntry1, emphasisEnd1, switchSprite1));
+    
+            ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
+                applyEntry(nearest2, history2, lastSprite2, mainEntry2, emphasisEnd2, switchSprite2));
+    
+            setTimeout(updateSpriteBasedOnTime, 0);
+    
+        } catch (error) {
+            console.error('Error in updateSpriteBasedOnTime:', error);
         }
     }
 
