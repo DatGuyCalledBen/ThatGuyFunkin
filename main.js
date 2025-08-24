@@ -4317,9 +4317,11 @@ document.addEventListener("DOMContentLoaded", function () {
     let emphasisEnd1 = 0;
     let emphasisEnd2 = 0;
     
-    const emphasisDuration = ((beatDuration*1000)/8);     // ms main movement dominates
+    const emphasisDuration = ((beatDuration*1000)/4);     // ms main movement dominates
+    console.warn(emphasisDuration)
     const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
-    const maxHistory = 4;             // length of rolling average
+    console.warn(anticipationOffset)
+    const maxHistory = 5;             // length of rolling average
     
     // Micro-motion config
     const microMotionRange = 0.01;    // sway range for moving (Babylon units)
@@ -4343,7 +4345,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
     
-            function lookAhead(data, time, window=100) {
+            function lookAhead(data, time, window=1000) {
                 return data.find(e => e.t > time && e.t <= time + window);
             }
     
@@ -4387,7 +4389,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (entry.d !== lastSprite) {
                     if (entry.d >= 0 && entry.d <= 3) {
                         mainEntry = entry.d;
-                        emphasisEnd = now + emphasisDuration;
+                        emphasisEnd = now + Math.min(entry.l,emphasisDuration);
                     } else {
                         mainEntry = null;
                     }
