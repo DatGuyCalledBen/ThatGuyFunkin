@@ -4321,7 +4321,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.warn(emphasisDuration)
     const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
     console.warn(anticipationOffset)
-    const maxHistory = 5;             // length of rolling average
+    const maxHistory = BPM;             // length of rolling average
     
     // Micro-motion config
     const microMotionRange = 0.01;    // sway range for moving (Babylon units)
