@@ -4413,6 +4413,15 @@ document.addEventListener("DOMContentLoaded", function () {
     //     }
     // }
     
+    let lastSprite1 = null;
+    let lastSprite2 = null;
+    let lastSwitchTime1 = 0;
+    let lastSwitchTime2 = 0;
+    
+    // Track last micro-offset update time
+    let lastOffsetUpdate1 = 0;
+    let lastOffsetUpdate2 = 0;
+    
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !danceData2 || !isAudioStarted) return;
@@ -4517,8 +4526,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // These globals are expected to exist already in your code:
             // lastSprite1, lastSprite2, lastSwitchTime1, lastSwitchTime2
             // We'll also use local lastOffsetUpdate timestamps to throttle offset-only updates
-            if (typeof lastOffsetUpdate1 === 'undefined') lastOffsetUpdate1 = 0;
-            if (typeof lastOffsetUpdate2 === 'undefined') lastOffsetUpdate2 = 0;
     
             function handleSprite(danceData, state) {
                 // state should be an object-like view into globals:
