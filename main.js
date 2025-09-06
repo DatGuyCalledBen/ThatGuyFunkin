@@ -4358,71 +4358,319 @@ document.addEventListener("DOMContentLoaded", function () {
     //     }
     // }
     
-    // let lastSprite1 = null;
-    // let lastSprite2 = null;
-    // let lastSwitchTime1 = 0;
-    // let lastSwitchTime2 = 0;
+    //good and original vvv
     
     // function updateSpriteBasedOnTime() {
     //     try {
     //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
     
-    //         let currentTime = performance.now();
+    //         const currentTime = performance.now();
+    //         const anticipationOffset = beatDuration * 1000 / 16; // small look-ahead
     
+    //         // Find the nearest note that is currently active or upcoming
     //         function findNearestEntry(data, time) {
     //             return data.reduce((nearest, entry) => {
-    //                 return (Math.abs(entry.t - time) < Math.abs(nearest.t - time))
+    //                 return Math.abs(entry.t - time) < Math.abs(nearest.t - time)
     //                     ? entry
     //                     : nearest;
     //             });
     //         }
     
-    //         // Tweened switch
-    //         function smoothSwitch(entry, lastSprite, lastSwitchTime, switchFn) {
-    //             if (!entry) return { lastSprite, lastSwitchTime };
-    
-    //             let now = performance.now();
-    //             const minGap = 80; // ms
-    //             if (now - lastSwitchTime < minGap) {
-    //                 return { lastSprite, lastSwitchTime };
+    //         // Optional: Micro-offsets for natural motion
+    //         function getMicroOffsets(isIdle, t, range = 0.01, speed = 0.002) {
+    //             if (isIdle) {
+    //                 return {
+    //                     x: Math.sin(t * speed) * range * 0.5,
+    //                     y: Math.cos(t * speed) * range * 0.5
+    //                 };
+    //             } else {
+    //                 return {
+    //                     x: (Math.random() - 0.5) * range,
+    //                     y: (Math.random() - 0.5) * range
+    //                 };
     //             }
-    
-    //             if (lastSprite === entry.d) return { lastSprite, lastSwitchTime };
-    
-    //             // If your spritesheet is organized by numeric frames, we can tween:
-    //             let startFrame = lastSprite ?? entry.d;
-    //             let endFrame = entry.d;
-    
-    //             let steps = 3;         // number of in-betweens
-    //             let stepTime = 30;     // ms per step
-    //             let diff = endFrame - startFrame;
-    //             let dir = diff === 0 ? 0 : diff / Math.abs(diff); // +1 or -1 direction
-    
-    //             for (let i = 1; i <= steps; i++) {
-    //                 setTimeout(() => {
-    //                     let tweenFrame = startFrame + dir * Math.round((i / steps) * Math.abs(diff));
-    //                     switchFn(tweenFrame);
-    //                 }, i * stepTime);
-    //             }
-    
-    //             return { lastSprite: entry.d, lastSwitchTime: now };
     //         }
     
-    //         let nearest1 = findNearestEntry(danceData1, currentTime);
-    //         let nearest2 = findNearestEntry(danceData2, currentTime);
+    //         // Sprite 1
+    //         const nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
+    //         if (nearest1) {
+    //             const offsets = getMicroOffsets(nearest1.d >= 4, currentTime);
+    //             switchSprite1(nearest1.d, offsets.x, offsets.y);
+    //         }
     
-    //         ({ lastSprite: lastSprite1, lastSwitchTime: lastSwitchTime1 } =
-    //             smoothSwitch(nearest1, lastSprite1, lastSwitchTime1, switchSprite1));
+    //         // Sprite 2
+    //         const nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
+    //         if (nearest2) {
+    //             const offsets = getMicroOffsets(nearest2.d >= 4, currentTime);
+    //             switchSprite2(nearest2.d, offsets.x, offsets.y);
+    //         }
     
-    //         ({ lastSprite: lastSprite2, lastSwitchTime: lastSwitchTime2 } =
-    //             smoothSwitch(nearest2, lastSprite2, lastSwitchTime2, switchSprite2));
+    //         // Loop via requestAnimationFrame
+    //         requestAnimationFrame(updateSpriteBasedOnTime);
     
-    //         setTimeout(updateSpriteBasedOnTime, 0);
     //     } catch (error) {
     //         console.error('Error in updateSpriteBasedOnTime:', error);
     //     }
     // }
-
+    
+    function updateSpriteBasedOnTime() {
+        try {
+            if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    
+            // ----------------- timing & scaling (beat-dependent) -----------------
+            const now = performance.now();
+            const beatMs = Math.max(1, beatDuration * 1000);              // ms per beat (protect against zero)
+            const anticipationOffset = Math.max(6, beatMs / 16);          // look-ahead (ms)
+            const minGap = Math.max(12, beatMs * 0.03);                   // minimum ms between directional switch attempts
+            const offsetUpdateInterval = Math.max(16, beatMs * 0.01);     // throttle micro-offset updates
+    
+            // Micro-motion params (scaleable if you want)
+            const microMotionRange = 0.01;
+            const idleDriftRange = 0.005;
+            const idleDriftSpeed = 0.0025;
+    
+            // ----------------- efficient helpers -----------------
+            // Binary-search nearest index (assumes data sorted by entry.t ascending)
+            function binarySearchNearestIndex(data, time) {
+                let lo = 0, hi = data.length - 1;
+                if (data.length === 0) return -1;
+                if (time <= data[0].t) return 0;
+                if (time >= data[hi].t) return hi;
+    
+                while (lo <= hi) {
+                    const mid = (lo + hi) >> 1;
+                    const mt = data[mid].t;
+                    if (mt === time) return mid;
+                    if (mt < time) lo = mid + 1;
+                    else hi = mid - 1;
+                }
+                // lo is first index with t > time; choose closest between lo and lo-1
+                const a = Math.max(0, lo - 1);
+                const b = Math.min(data.length - 1, lo);
+                return (Math.abs(data[a].t - time) <= Math.abs(data[b].t - time)) ? a : b;
+            }
+    
+            // Linear fallback nearest if array isn't sorted or binary search fails
+            function linearNearestIndex(data, time) {
+                if (!data.length) return -1;
+                let bestIdx = 0, bestDiff = Infinity;
+                for (let i = 0; i < data.length; i++) {
+                    const d = Math.abs(data[i].t - time);
+                    if (d < bestDiff) { bestDiff = d; bestIdx = i; }
+                }
+                return bestIdx;
+            }
+    
+            function isSortedByTime(data) {
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i - 1].t > data[i].t) return false;
+                }
+                return true;
+            }
+    
+            // Find the active entry (note that covers this time + anticipation).
+            // We search around the nearest index (index, index-1, index+1) so it's cheap.
+            function findActiveEntry(data, timeWithAnticipation) {
+                if (!data || data.length === 0) return null;
+                const useBinary = isSortedByTime(data);
+                const idx = useBinary ? binarySearchNearestIndex(data, timeWithAnticipation) : linearNearestIndex(data, timeWithAnticipation);
+                if (idx < 0) return null;
+    
+                // check neighbors for any entry that contains the time
+                for (let i = Math.max(0, idx - 2); i <= Math.min(data.length - 1, idx + 2); i++) {
+                    const e = data[i];
+                    if (timeWithAnticipation >= e.t && timeWithAnticipation < (e.t + (e.l || 0))) return e;
+                }
+    
+                // if none active, return nearest entry as a fallback (for anticipation)
+                return data[idx] || null;
+            }
+    
+            // Micro-offset generator
+            function getMicroOffsets(isIdle, t, scale = 1.0) {
+                if (isIdle) {
+                    return {
+                        x: Math.sin(t * idleDriftSpeed) * idleDriftRange * scale,
+                        y: Math.cos(t * idleDriftSpeed) * idleDriftRange * scale
+                    };
+                } else {
+                    // deterministic-ish jitter per frame is okay here; randomness keeps motion lively
+                    return {
+                        x: (Math.random() - 0.5) * microMotionRange * scale,
+                        y: (Math.random() - 0.5) * microMotionRange * scale
+                    };
+                }
+            }
+    
+            // Small helper: only call switch when meaningful
+            function shouldCallSwitch(lastCallTime, lastIndex, candidateIndex, now, minGap, activeNoteStartedRecently) {
+                // If direction is different and either:
+                //  - enough time has passed since last switch (minGap), or
+                //  - candidate is truly active and just started (we want immediate response)
+                if (candidateIndex === lastIndex) return true; // still update offsets even if same index
+                if (now - lastCallTime >= minGap) return true;
+                if (activeNoteStartedRecently) return true;
+                return false;
+            }
+    
+            // ----------------- per-sprite logic -----------------
+            // These globals are expected to exist already in your code:
+            // lastSprite1, lastSprite2, lastSwitchTime1, lastSwitchTime2
+            // We'll also use local lastOffsetUpdate timestamps to throttle offset-only updates
+            if (typeof lastOffsetUpdate1 === 'undefined') lastOffsetUpdate1 = 0;
+            if (typeof lastOffsetUpdate2 === 'undefined') lastOffsetUpdate2 = 0;
+    
+            function handleSprite(danceData, state) {
+                // state should be an object-like view into globals:
+                // { lastSpriteVarName: 'lastSprite1', lastSwitchTimeVarName: 'lastSwitchTime1',
+                //   lastSpriteValue: lastSprite1, lastSwitchTimeValue: lastSwitchTime1, switchFn: switchSprite1, lastOffsetUpdateName: 'lastOffsetUpdate1' }
+                const timeTarget = now + anticipationOffset;
+                const entry = findActiveEntry(danceData, timeTarget);
+                if (!entry) {
+                    // Nothing in data -> go idle
+                    const offsets = getMicroOffsets(true, now);
+                    // Only throttle offset updates a little to reduce DOM/engine churn
+                    if (now - window[state.lastOffsetUpdateName] >= offsetUpdateInterval || state.lastSpriteValue !== 4) {
+                        state.switchFn(4, offsets.x, offsets.y);
+                        window[state.lastOffsetUpdateName] = now;
+                    }
+                    state.lastSpriteValue = 4;
+                    return state;
+                }
+    
+                const candidateIndex = entry.d;
+                const activeNow = (timeTarget >= entry.t && timeTarget < (entry.t + (entry.l || 0)));
+                const justStarted = activeNow && (now - entry.t) < Math.max(10, beatMs * 0.02); // very recent start window
+    
+                // Decide whether to switch (full direction change) or just update offsets
+                const doSwitch = shouldCallSwitch(state.lastSwitchTimeValue, state.lastSpriteValue, candidateIndex, now, minGap, justStarted);
+    
+                // Always update offsets at a throttled rate so micro-motion shows
+                if (doSwitch) {
+                    // call switch with micro offsets (switchSprite manages same-sheet / recreate logic)
+                    const offsets = getMicroOffsets(candidateIndex >= 4, now, 1.0);
+                    state.switchFn(candidateIndex, offsets.x, offsets.y);
+                    state.lastSpriteValue = candidateIndex;
+                    state.lastSwitchTimeValue = now;
+                    window[state.lastOffsetUpdateName] = now;
+                } else {
+                    // No full switch; may still want to update offsets occasionally
+                    if (now - window[state.lastOffsetUpdateName] >= offsetUpdateInterval) {
+                        const offsets = getMicroOffsets(candidateIndex >= 4, now, 1.0);
+                        state.switchFn(candidateIndex, offsets.x, offsets.y);
+                        window[state.lastOffsetUpdateName] = now;
+                        // don't update lastSwitchTimeValue because we didn't perform a switch
+                    }
+                }
+    
+                return state;
+            }
+    
+            // ----------------- call per-sprite -----------------
+            // Provide state objects linked to your existing globals
+            ({ lastSpriteValue: lastSprite1, lastSwitchTimeValue: lastSwitchTime1 } =
+                handleSprite(danceData1, {
+                    lastSpriteValue: lastSprite1,
+                    lastSwitchTimeValue: lastSwitchTime1,
+                    switchFn: switchSprite1,
+                    lastOffsetUpdateName: 'lastOffsetUpdate1'
+                })
+            );
+    
+            ({ lastSpriteValue: lastSprite2, lastSwitchTimeValue: lastSwitchTime2 } =
+                handleSprite(danceData2, {
+                    lastSpriteValue: lastSprite2,
+                    lastSwitchTimeValue: lastSwitchTime2,
+                    switchFn: switchSprite2,
+                    lastOffsetUpdateName: 'lastOffsetUpdate2'
+                })
+            );
+    
+            // Frame loop
+            requestAnimationFrame(updateSpriteBasedOnTime);
+        } catch (error) {
+            console.error('Error in updateSpriteBasedOnTime:', error);
+        }
+    }
+    
+    // let lastSprite1 = null;
+    // let lastSprite2 = null;
+    // let lastSwitchTime1 = 0;
+    // let lastSwitchTime2 = 0;
+    
+    // // Frame queues for micro-tweening
+    // let frameQueue1 = [];
+    // let frameQueue2 = [];
+    
+    // // Config: now dependent on beatDuration
+    // const minGap = beatDuration * 1000 * 0.05;      // 5% of beat duration
+    // const tweenSteps = 2;                            // small micro-tween steps
+    // const stepDelay = beatDuration * 1000 * 0.02;   // 2% of beat duration per step
+    
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    
+    //         const now = performance.now();
+    
+    //         function findNearestEntry(data, time) {
+    //             return data.reduce((nearest, entry) => {
+    //                 return Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest;
+    //             });
+    //         }
+    
+    //         // Create a tiny tween queue
+    //         function enqueueTween(last, target) {
+    //             if (last === target) return [];
+    //             const dir = target > last ? 1 : -1;
+    //             const diff = Math.abs(target - last);
+    //             const queue = [];
+    //             for (let i = 1; i <= tweenSteps; i++) {
+    //                 const frame = last + dir * Math.round((i / tweenSteps) * diff);
+    //                 queue.push(frame);
+    //             }
+    //             return queue;
+    //         }
+    
+    //         function processQueue(queue, switchFn) {
+    //             if (queue.length > 0) {
+    //                 const nextFrame = queue.shift();
+    //                 switchFn(nextFrame);
+    //             }
+    //         }
+    
+    //         function smoothSwitch(entry, lastSprite, lastSwitchTime, frameQueue, switchFn) {
+    //             if (!entry) return { lastSprite, lastSwitchTime, frameQueue };
+    
+    //             if (lastSprite === entry.d) return { lastSprite, lastSwitchTime, frameQueue };
+    //             if (now - lastSwitchTime < minGap) return { lastSprite, lastSwitchTime, frameQueue };
+    
+    //             // Enqueue micro-tween frames
+    //             frameQueue = enqueueTween(lastSprite ?? entry.d, entry.d);
+    //             lastSprite = entry.d;
+    //             lastSwitchTime = now;
+    
+    //             return { lastSprite, lastSwitchTime, frameQueue };
+    //         }
+    
+    //         // Sprite 1
+    //         const nearest1 = findNearestEntry(danceData1, now);
+    //         ({ lastSprite: lastSprite1, lastSwitchTime: lastSwitchTime1, frameQueue: frameQueue1 } =
+    //             smoothSwitch(nearest1, lastSprite1, lastSwitchTime1, frameQueue1, switchSprite1));
+    //         processQueue(frameQueue1, switchSprite1);
+    
+    //         // Sprite 2
+    //         const nearest2 = findNearestEntry(danceData2, now);
+    //         ({ lastSprite: lastSprite2, lastSwitchTime: lastSwitchTime2, frameQueue: frameQueue2 } =
+    //             smoothSwitch(nearest2, lastSprite2, lastSwitchTime2, frameQueue2, switchSprite2));
+    //         processQueue(frameQueue2, switchSprite2);
+    
+    //         requestAnimationFrame(updateSpriteBasedOnTime);
+    
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
 
     function validateDanceData(data) {
         try {
@@ -4517,295 +4765,93 @@ document.addEventListener("DOMContentLoaded", function () {
     //     }
     // }
     
-    // let history1 = [];
-    // let history2 = [];
-    // let lastSprite1 = 4;
-    // let lastSprite2 = 4;
-    // let mainEntry1 = null;
-    // let mainEntry2 = null;
-    // let emphasisEnd1 = 0;
-    // let emphasisEnd2 = 0;
-    
-    // const emphasisDuration = ((beatDuration*1000)/4);     // ms main movement dominates
-    // console.warn(emphasisDuration)
-    // const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
-    // console.warn(anticipationOffset)
-    // const maxHistory = BPM;             // length of rolling average
+    // -------------------- Global State --------------------
+    // let lastSprite1 = 4, lastSprite2 = 4;
+    // let mainEntry1 = null, mainEntry2 = null;
+    // let emphasisEnd1 = 0, emphasisEnd2 = 0;
+    // let blend1 = 4, blend2 = 4;
     
     // // Micro-motion config
-    // const microMotionRange = 0.01;    // sway range for moving (Babylon units)
-    // const idleDriftRange   = 0.005;   // sway range for idle (Babylon units)
-    // const idleDriftSpeed   = 0.002;   // speed of sine drift
+    // const microMotionRange = 0.01;  // jitter for active notes
+    // const idleDriftRange   = 0.005; // smooth idle sway
+    // const idleDriftSpeed   = 0.002; // sine wave speed
     
-    // function updateSpriteBasedOnTime() {
+    // // Timing config
+    // const anticipationOffset = beatDuration * 1000 / 16; // ms look-ahead
+        
+    //     function updateSpriteBasedOnTime() {
     //     try {
     //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
-    //         let currentTime = performance.now();
     
-    //         function rollingAverage(newValue, history) {
-    //             history.push(newValue);
-    //             if (history.length > maxHistory) history.shift();
-    //             return history.reduce((a,v)=>a+v,0)/history.length;
-    //         }
+    //         const now = performance.now();
+    //         const anticipationOffset = beatDuration * 1000 / 16; // look-ahead
     
-    //         function findNearestEntry(data, time) {
-    //             return data.reduce((nearest, entry) =>
-    //                 Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
-    //             );
-    //         }
-    
-    //         function lookAhead(data, time, window=1000) {
-    //             return data.find(e => e.t > time && e.t <= time + window);
-    //         }
-    
-    //         function getMicroOffsets(isIdle, now) {
+    //         // Micro-motion helper
+    //         function getMicroOffsets(isIdle, t, scale = 1.0) {
     //             if (isIdle) {
-    //                 // idle drift = smooth sine wave
     //                 return {
-    //                     x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
-    //                     y: Math.cos(now * idleDriftSpeed) * idleDriftRange
+    //                     x: Math.sin(t * 0.002) * 0.005 * scale,
+    //                     y: Math.cos(t * 0.002) * 0.005 * scale
     //                 };
     //             } else {
-    //                 // active micro jitter
     //                 return {
-    //                     x: (Math.random() - 0.5) * microMotionRange,
-    //                     y: (Math.random() - 0.5) * microMotionRange
+    //                     x: (Math.random() - 0.5) * 0.01 * scale,
+    //                     y: (Math.random() - 0.5) * 0.01 * scale
     //                 };
     //             }
     //         }
     
-    //         function applyEntry(entry, history, lastSprite, mainEntry, emphasisEnd, switchFn) {
-    //             let now = performance.now();
+    //         // Apply discrete MIDI note to a sprite
+    //         function applyMIDINoteDiscrete(danceData, lastSprite, mainEntry, emphasisEnd, blend, switchFn) {
+    //             // Find active note at current time + anticipation
+    //             const activeNote = danceData.find(e =>
+    //                 now + anticipationOffset >= e.t && now + anticipationOffset < e.t + e.l
+    //             );
     
-    //             // rolling avg direction
-    //             rollingAverage(entry.d, history);
-    
-    //             // look ahead for anticipation
-    //             let upcoming = lookAhead(danceData1, currentTime + anticipationOffset);
-    //             let target = entry.d;
-    //             if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
-    //                 target = Math.round((entry.d + upcoming.d) / 2);
+    //             if (!activeNote) {
+    //                 // No active note → idle
+    //                 mainEntry = null;
+    //                 lastSprite = 4;
+    //                 blend = 4;
+    //                 const offsets = getMicroOffsets(true, now);
+    //                 switchFn(4, offsets.x, offsets.y);
+    //                 return { lastSprite, mainEntry, emphasisEnd, blend };
     //             }
     
-    //             // maintain emphasis if active
+    //             const target = activeNote.d;
+    
+    //             // Maintain emphasis while within note duration
     //             if (mainEntry !== null && now < emphasisEnd) {
-    //                 let offsets = getMicroOffsets(mainEntry >= 4, now);
+    //                 const offsets = getMicroOffsets(mainEntry >= 4, now);
     //                 switchFn(mainEntry, offsets.x, offsets.y);
-    //                 return { lastSprite, mainEntry, emphasisEnd };
-    //             }
-    
-    //             // if changed, emphasize or idle
-    //             if (entry.d !== lastSprite) {
-    //                 if (entry.d >= 0 && entry.d <= 3) {
-    //                     mainEntry = entry.d;
-    //                     emphasisEnd = now + Math.min(entry.l,emphasisDuration);
-    //                 } else {
-    //                     mainEntry = null;
-    //                 }
-    
-    //                 // small easing transition: halfway to target first
-    //                 const offsets = getMicroOffsets(entry.d >= 4, now);
-    //                 setTimeout(() => switchFn(target, offsets.x, offsets.y), 30);
-    //                 setTimeout(() => {
-    //                     let finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
-    //                     switchFn(entry.d, finalOffsets.x, finalOffsets.y);
-    //                 }, 60);
-    
-    //                 lastSprite = entry.d;
     //             } else {
-    //                 // apply micro motion even if idle/repeated
-    //                 let offsets = getMicroOffsets(entry.d >= 4, now);
-    //                 switchFn(entry.d, offsets.x, offsets.y);
+    //                 const offsets = getMicroOffsets(target >= 4, now, 1.0);
+    //                 switchFn(target, offsets.x, offsets.y);
+    //                 mainEntry = target;
+    //                 emphasisEnd = activeNote.t + activeNote.l; // respect note length
     //             }
     
-    //             return { lastSprite, mainEntry, emphasisEnd };
+    //             lastSprite = target;
+    //             blend = target;
+    
+    //             return { lastSprite, mainEntry, emphasisEnd, blend };
     //         }
     
-    //         // Anticipatory nearest entries
-    //         let nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
-    //         let nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
+    //         // Apply MIDI notes for both sprites
+    //         ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1, blend: blend1 } =
+    //             applyMIDINoteDiscrete(danceData1, lastSprite1, mainEntry1, emphasisEnd1, blend1, switchSprite1));
     
-    //         ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
-    //             applyEntry(nearest1, history1, lastSprite1, mainEntry1, emphasisEnd1, switchSprite1));
+    //         ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2, blend: blend2 } =
+    //             applyMIDINoteDiscrete(danceData2, lastSprite2, mainEntry2, emphasisEnd2, blend2, switchSprite2));
     
-    //         ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
-    //             applyEntry(nearest2, history2, lastSprite2, mainEntry2, emphasisEnd2, switchSprite2));
-    
-    //         setTimeout(updateSpriteBasedOnTime, 0);
+    //         // Loop
+    //         requestAnimationFrame(updateSpriteBasedOnTime);
     
     //     } catch (error) {
-    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //         console.error("Error in updateSpriteBasedOnTime:", error);
     //     }
     // }
     
-    // --- Globals ---
-    let history1 = [];
-    let history2 = [];
-    let lastSprite1 = 4;
-    let lastSprite2 = 4;
-    let mainEntry1 = null;
-    let mainEntry2 = null;
-    let emphasisEnd1 = 0;
-    let emphasisEnd2 = 0;
-    
-    // Beat-scaled durations
-    const emphasisDuration   = (beatDuration * 1000) / 4;   // main movement dominates
-    const anticipationOffset = (beatDuration * 1000) / 16;  // look-ahead anticipation
-    
-    // Transition fractions of beat
-    const transition1 = (beatDuration * 1000) / 64; // ~1/64 beat
-    const transition2 = (beatDuration * 1000) / 32; // ~1/32 beat
-    
-    // Micro-motion config
-    const microMotionRange = 0.01;
-    const idleDriftRange   = 0.005;
-    const idleDriftSpeed   = 0.002;
-    
-    // --- Helpers ---
-    
-    function rollingAverage(newValue, history, maxHistory) {
-        history.push(newValue);
-        if (history.length > maxHistory) history.shift();
-        console.warn(history.reduce((a, v) => a + v, 0) / history.length)
-        return history.reduce((a, v) => a + v, 0) / history.length;
-    }
-    
-    function findNearestEntry(data, time) {
-        return data.reduce((nearest, entry) =>
-            Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
-        );
-    }
-    
-    function lookAhead(data, time, window = 100) {
-        return data.find(e => e.t > time && e.t <= time + window);
-    }
-    
-    function getMicroOffsets(isIdle, now) {
-        if (isIdle) {
-            return {
-                x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
-                y: Math.cos(now * idleDriftSpeed) * idleDriftRange
-            };
-        } else {
-            return {
-                x: (Math.random() - 0.5) * microMotionRange,
-                y: (Math.random() - 0.5) * microMotionRange
-            };
-        }
-    }
-    
-    function calculateMaxHistory(data, beatsToAverage = 4) {
-        if (!data || data.length < 2) return beatsToAverage;
-    
-        const intervals = [];
-        for (let i = 1; i < data.length; i++) {
-            intervals.push(data[i].t - data[i - 1].t);
-        }
-        const avgInterval = intervals.reduce((a, v) => a + v, 0) / intervals.length;
-        const samplesPerBeat = Math.max(1, Math.round((beatDuration * 1000) / avgInterval));
-    
-        return samplesPerBeat * beatsToAverage;
-    }
-    
-    function applyEntry({
-        entry,
-        history,
-        lastSprite,
-        mainEntry,
-        emphasisEnd,
-        switchFn,
-        data,
-        currentTime,
-        maxHistory
-    }) {
-        rollingAverage(entry.d, history, maxHistory);
-    
-        let upcoming = lookAhead(data, currentTime + anticipationOffset);
-        let target = entry.d;
-        if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
-            target = Math.round((entry.d + upcoming.d) / 2);
-        }
-    
-        const now = currentTime;
-    
-        if (mainEntry !== null && now < emphasisEnd) {
-            const offsets = getMicroOffsets(mainEntry >= 4, now);
-            switchFn(mainEntry, offsets.x, offsets.y);
-            return { lastSprite, mainEntry, emphasisEnd };
-        }
-    
-        if (entry.d !== lastSprite) {
-            if (entry.d >= 0 && entry.d <= 3) {
-                mainEntry = entry.d;
-                emphasisEnd = now + emphasisDuration;
-            } else {
-                mainEntry = null;
-            }
-    
-            const offsets = getMicroOffsets(entry.d >= 4, now);
-            setTimeout(() => switchFn(target, offsets.x, offsets.y), transition1);
-            setTimeout(() => {
-                const finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
-                switchFn(entry.d, finalOffsets.x, finalOffsets.y);
-            }, transition2);
-    
-            lastSprite = entry.d;
-        } else {
-            const offsets = getMicroOffsets(entry.d >= 4, now);
-            switchFn(entry.d, offsets.x, offsets.y);
-        }
-    
-        return { lastSprite, mainEntry, emphasisEnd };
-    }
-    
-    // --- Main Update Function ---
-    
-    function updateSpriteBasedOnTime() {
-        try {
-            if (!danceData1 || !danceData2 || !isAudioStarted) return;
-    
-            const currentTime = performance.now();
-    
-            // Compute dynamic rolling average length
-            const maxHistory1 = calculateMaxHistory(danceData1, 4);
-            const maxHistory2 = calculateMaxHistory(danceData2, 4);
-    
-            const nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
-            const nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
-    
-            ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
-                applyEntry({
-                    entry: nearest1,
-                    history: history1,
-                    lastSprite: lastSprite1,
-                    mainEntry: mainEntry1,
-                    emphasisEnd: emphasisEnd1,
-                    switchFn: switchSprite1,
-                    data: danceData1,
-                    currentTime,
-                    maxHistory: maxHistory1
-                }));
-    
-            ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
-                applyEntry({
-                    entry: nearest2,
-                    history: history2,
-                    lastSprite: lastSprite2,
-                    mainEntry: mainEntry2,
-                    emphasisEnd: emphasisEnd2,
-                    switchFn: switchSprite2,
-                    data: danceData2,
-                    currentTime,
-                    maxHistory: maxHistory2
-                }));
-    
-            requestAnimationFrame(updateSpriteBasedOnTime);
-    
-        } catch (error) {
-            console.error("Error in updateSpriteBasedOnTime:", error);
-        }
-    }
-
     function startSelfHealingCheck(enableSelfHealing = true) {
         if (!enableSelfHealing) return;
 
