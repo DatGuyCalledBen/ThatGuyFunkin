@@ -3609,35 +3609,28 @@ document.addEventListener("DOMContentLoaded", function () {
         return x - Math.floor(x);
     }
     
-    async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,sprite1) {
+    async function adjustSpritePosition(spriteManagers, currentSpriteSheetIndex, sprite, D, targetY) {
         try {
-            // Create an offscreen canvas to analyze the sprite transparency
-            const spriteTexture = spriteManagers1[currentSpriteSheetIndex1].texture;
+            const spriteTexture = spriteManagers[currentSpriteSheetIndex].texture;
             const img = new Image();
             img.src = spriteTexture.url;
-    
             await img.decode();
     
             const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-    
             canvas.width = img.width;
             canvas.height = img.height;
+            const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0);
     
-            // Get pixel data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     
             let lowestVisibleY = null;
     
-            // Iterate from bottom to top to find the first visible (non-transparent) pixel
+            // Scan from bottom to top to find first non-transparent pixel
             for (let y = canvas.height - 1; y >= 0; y--) {
                 for (let x = 0; x < canvas.width; x++) {
                     const index = (y * canvas.width + x) * 4;
-                    const alpha = pixels[index + 3]; // Alpha channel
-    
-                    if (alpha > 0) { // If not transparent
+                    if (pixels[index + 3] > 0) { // alpha > 0
                         lowestVisibleY = y;
                         break;
                     }
@@ -3646,68 +3639,130 @@ document.addEventListener("DOMContentLoaded", function () {
             }
     
             if (lowestVisibleY !== null) {
-                // Convert lowest Y pixel to world coordinates
                 const spriteHeight = spriteTexture.getBaseSize().height;
                 const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
     
-                // Adjust position to make the non-transparent part touch y = 2.45
-                sprite1.position.y = 2.5 - offsetY;
-                console.warn('new position',sprite1.position.y)
-            }
-        } catch (error) {
-            console.error("Error adjusting sprite position:", error);
-        }
-    }
-    
-    async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,sprite2) {
-        try {
-            // Create an offscreen canvas to analyze the sprite transparency
-            const spriteTexture = spriteManagers2[currentSpriteSheetIndex2].texture;
-            const img = new Image();
-            img.src = spriteTexture.url;
-    
-            await img.decode();
-    
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-    
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-    
-            // Get pixel data
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imageData.data;
-    
-            let lowestVisibleY = null;
-    
-            // Iterate from bottom to top to find the first visible (non-transparent) pixel
-            for (let y = canvas.height - 1; y >= 0; y--) {
-                for (let x = 0; x < canvas.width; x++) {
-                    const index = (y * canvas.width + x) * 4;
-                    const alpha = pixels[index + 3]; // Alpha channel
-    
-                    if (alpha > 0) { // If not transparent
-                        lowestVisibleY = y;
-                        break;
-                    }
+                // Update D vector and sprite position
+                D.y = targetY - offsetY;
+                if (sprite && sprite.position) {
+                    sprite.position.y = D.y;
                 }
-                if (lowestVisibleY !== null) break;
-            }
     
-            if (lowestVisibleY !== null) {
-                // Convert lowest Y pixel to world coordinates
-                const spriteHeight = spriteTexture.getBaseSize().height;
-                const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
-    
-                // Adjust position to make the non-transparent part touch y = 2.45
-                sprite2.position.y = 0.5 - offsetY;
-                console.warn('new position',sprite2.position.y)
+                console.warn(`Adjusted sprite position to Y=${D.y}`);
             }
         } catch (error) {
             console.error("Error adjusting sprite position:", error);
         }
     }
+    
+    // Drop-in versions for your existing calls
+    async function adjustSpritePosition1(spriteManagers1, currentSpriteSheetIndex1, sprite1) {
+        await adjustSpritePosition(spriteManagers1, currentSpriteSheetIndex1, sprite1, D1, 2.5);
+    }
+    
+    async function adjustSpritePosition2(spriteManagers2, currentSpriteSheetIndex2, sprite2) {
+        await adjustSpritePosition(spriteManagers2, currentSpriteSheetIndex2, sprite2, D2, 0.5);
+    }
+    
+    // async function adjustSpritePosition1(spriteManagers1,currentSpriteSheetIndex1,sprite1) {
+    //     try {
+    //         // Create an offscreen canvas to analyze the sprite transparency
+    //         const spriteTexture = spriteManagers1[currentSpriteSheetIndex1].texture;
+    //         const img = new Image();
+    //         img.src = spriteTexture.url;
+    
+    //         await img.decode();
+    
+    //         const canvas = document.createElement("canvas");
+    //         const ctx = canvas.getContext("2d");
+    
+    //         canvas.width = img.width;
+    //         canvas.height = img.height;
+    //         ctx.drawImage(img, 0, 0);
+    
+    //         // Get pixel data
+    //         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    //         const pixels = imageData.data;
+    
+    //         let lowestVisibleY = null;
+    
+    //         // Iterate from bottom to top to find the first visible (non-transparent) pixel
+    //         for (let y = canvas.height - 1; y >= 0; y--) {
+    //             for (let x = 0; x < canvas.width; x++) {
+    //                 const index = (y * canvas.width + x) * 4;
+    //                 const alpha = pixels[index + 3]; // Alpha channel
+    
+    //                 if (alpha > 0) { // If not transparent
+    //                     lowestVisibleY = y;
+    //                     break;
+    //                 }
+    //             }
+    //             if (lowestVisibleY !== null) break;
+    //         }
+    
+    //         if (lowestVisibleY !== null) {
+    //             // Convert lowest Y pixel to world coordinates
+    //             const spriteHeight = spriteTexture.getBaseSize().height;
+    //             const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
+    
+    //             // Adjust position to make the non-transparent part touch y = 2.45
+    //             sprite1.position.y = 2.5 - offsetY;
+    //             console.warn('new position',sprite1.position.y)
+    //         }
+    //     } catch (error) {
+    //         console.error("Error adjusting sprite position:", error);
+    //     }
+    // }
+    
+    // async function adjustSpritePosition2(spriteManagers2,currentSpriteSheetIndex2,sprite2) {
+    //     try {
+    //         // Create an offscreen canvas to analyze the sprite transparency
+    //         const spriteTexture = spriteManagers2[currentSpriteSheetIndex2].texture;
+    //         const img = new Image();
+    //         img.src = spriteTexture.url;
+    
+    //         await img.decode();
+    
+    //         const canvas = document.createElement("canvas");
+    //         const ctx = canvas.getContext("2d");
+    
+    //         canvas.width = img.width;
+    //         canvas.height = img.height;
+    //         ctx.drawImage(img, 0, 0);
+    
+    //         // Get pixel data
+    //         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    //         const pixels = imageData.data;
+    
+    //         let lowestVisibleY = null;
+    
+    //         // Iterate from bottom to top to find the first visible (non-transparent) pixel
+    //         for (let y = canvas.height - 1; y >= 0; y--) {
+    //             for (let x = 0; x < canvas.width; x++) {
+    //                 const index = (y * canvas.width + x) * 4;
+    //                 const alpha = pixels[index + 3]; // Alpha channel
+    
+    //                 if (alpha > 0) { // If not transparent
+    //                     lowestVisibleY = y;
+    //                     break;
+    //                 }
+    //             }
+    //             if (lowestVisibleY !== null) break;
+    //         }
+    
+    //         if (lowestVisibleY !== null) {
+    //             // Convert lowest Y pixel to world coordinates
+    //             const spriteHeight = spriteTexture.getBaseSize().height;
+    //             const offsetY = (spriteHeight - lowestVisibleY) / spriteHeight;
+    
+    //             // Adjust position to make the non-transparent part touch y = 2.45
+    //             sprite2.position.y = 0.5 - offsetY;
+    //             console.warn('new position',sprite2.position.y)
+    //         }
+    //     } catch (error) {
+    //         console.error("Error adjusting sprite position:", error);
+    //     }
+    // }
     
     
     // Function to validate a sprite URL by checking if it exists
@@ -3792,6 +3847,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Start animation and self-healing check after audio starts
             startAnimation();
             startSelfHealingCheck(true);
+            adjustSpritePosition1(spriteManagers1, currentSpriteSheetIndex1, sprite1);
+            adjustSpritePosition2(spriteManagers2, currentSpriteSheetIndex2, sprite2);
             updateSpriteBasedOnTime();
         }
     });
@@ -3815,61 +3872,128 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch(error => {
         console.error('Fetch error:', error);
     });
-
+    
     function startAnimation() {
         try {
-            let lastTimestamp = 0
-            let timestamp = performance.now()
+            function updateSpriteFrame({
+                sprite,
+                currentFrame,
+                currentSpriteSheetIndex,
+                spriteGroup,
+                isLoadingNext,
+                elapsed
+            }) {
+                if (isLoadingNext) return currentFrame;
+    
+                const frames = spriteGroup[currentSpriteSheetIndex].frames;
+                const frameStep = elapsed * beatsPerSecond;
+    
+                if (
+                    currentFrame >= frames - 1 ||
+                    currentFrame + frameStep >= frames - 1
+                ) {
+                    if (currentSpriteSheetIndex === 4 || currentSpriteSheetIndex === 5) {
+                        // Looping animation
+                        currentFrame = (currentFrame + (elapsed / frames)) % frames;
+                    } else {
+                        // Clamp at last frame
+                        currentFrame = frames - 1;
+                    }
+                } else {
+                    // Advance frame normally
+                    currentFrame = Math.min(frames - 1, currentFrame + frameStep);
+                }
+    
+                sprite.cellIndex = Math.floor(currentFrame);
+                return currentFrame;
+            }
+    
             function animate(timestamp) {
-                timestamp = performance.now();
-                let elapsed = (audio.currentTime % beatDuration);
-
-                if (!isLoadingNextSpriteSheet1) {
-                    if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
-                        if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
-                            //if (currentFrame1 == 0) {sprite1.cellIndex = Math.floor(currentFrame1);
-                            //} else {
-                            currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)) % (config.sprites.group[vocalist][currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
-                            //};
-                        } else {
-                            currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
-                        }
-                    } else {
-                    currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
-                    // configure to choose homme/femme based on config variable
-                    // configure to choose char based on random list selection
-                    sprite1.cellIndex = Math.floor(currentFrame1);
-                    }
-                }
-
-                if (!isLoadingNextSpriteSheet2) {
-                    if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * (beatsPerSecond))) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
-                        if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
-                            //if (currentFrame2 == 0) {sprite2.cellIndex = Math.floor(currentFrame2);
-                            //} else {
-                            currentFrame2 = (currentFrame2 + (elapsed / config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)) % (config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames ); sprite2.cellIndex = Math.floor(currentFrame2)
-                            //};
-                        } else {
-                            currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
-                        }
-                    } else {
-                    currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * (beatsPerSecond)));
-                    // configure to choose homme/femme based on config variable
-                    // configure to choose char based on random list selection
-                    sprite2.cellIndex = Math.floor(currentFrame2);
-                    }
-                }
-
+                // modulo-based elapsed time within the beat duration
+                const elapsed = timestamp % beatDuration;
+    
+                currentFrame1 = updateSpriteFrame({
+                    sprite: sprite1,
+                    currentFrame: currentFrame1,
+                    currentSpriteSheetIndex: currentSpriteSheetIndex1,
+                    spriteGroup: config.sprites.group[vocalist],
+                    isLoadingNext: isLoadingNextSpriteSheet1,
+                    elapsed
+                });
+    
+                currentFrame2 = updateSpriteFrame({
+                    sprite: sprite2,
+                    currentFrame: currentFrame2,
+                    currentSpriteSheetIndex: currentSpriteSheetIndex2,
+                    spriteGroup: config.sprites.group.tomSusanAssets,
+                    isLoadingNext: isLoadingNextSpriteSheet2,
+                    elapsed
+                });
+    
                 scene.render();
-                lastTimestamp = timestamp;
                 requestAnimationFrame(animate);
             }
-
+    
             requestAnimationFrame(animate);
         } catch (error) {
-            console.error('Error starting animation:', error);
+            console.error("Error starting animation:", error);
         }
     }
+
+    // function startAnimation() {
+    //     try {
+    //         let lastTimestamp = 0
+    //         let timestamp = performance.now()
+    //         function animate(timestamp) {
+    //             timestamp = performance.now();
+    //             let elapsed = (audio.currentTime % beatDuration);
+
+    //             if (!isLoadingNextSpriteSheet1) {
+    //                 if (currentFrame1 >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1 || (currentFrame1 + (elapsed * (beatsPerSecond))) >= config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1) {
+    //                     if (currentSpriteSheetIndex1 == 4 || currentSpriteSheetIndex1 == 5) {
+    //                         //if (currentFrame1 == 0) {sprite1.cellIndex = Math.floor(currentFrame1);
+    //                         //} else {
+    //                         currentFrame1 = (currentFrame1 + (elapsed / config.sprites.group[vocalist][currentSpriteSheetIndex1].frames)) % (config.sprites.group[vocalist][currentSpriteSheetIndex1].frames); sprite1.cellIndex = Math.floor(currentFrame1);
+    //                         //};
+    //                     } else {
+    //                         currentFrame1 = config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1;  sprite1.cellIndex = Math.floor(currentFrame1);
+    //                     }
+    //                 } else {
+    //                 currentFrame1 = Math.min(config.sprites.group[vocalist][currentSpriteSheetIndex1].frames - 1, currentFrame1 + (elapsed * (beatsPerSecond)));
+    //                 // configure to choose homme/femme based on config variable
+    //                 // configure to choose char based on random list selection
+    //                 sprite1.cellIndex = Math.floor(currentFrame1);
+    //                 }
+    //             }
+
+    //             if (!isLoadingNextSpriteSheet2) {
+    //                 if (currentFrame2 >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1 || (currentFrame2 + (elapsed * (beatsPerSecond))) >= config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1) {
+    //                     if (currentSpriteSheetIndex2 == 4 || currentSpriteSheetIndex2 == 5) {
+    //                         //if (currentFrame2 == 0) {sprite2.cellIndex = Math.floor(currentFrame2);
+    //                         //} else {
+    //                         currentFrame2 = (currentFrame2 + (elapsed / config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames)) % (config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames ); sprite2.cellIndex = Math.floor(currentFrame2)
+    //                         //};
+    //                     } else {
+    //                         currentFrame2 = config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1; sprite2.cellIndex = Math.floor(currentFrame2)
+    //                     }
+    //                 } else {
+    //                 currentFrame2 = Math.min(config.sprites.group.tomSusanAssets[currentSpriteSheetIndex2].frames - 1, currentFrame2 + (elapsed * (beatsPerSecond)));
+    //                 // configure to choose homme/femme based on config variable
+    //                 // configure to choose char based on random list selection
+    //                 sprite2.cellIndex = Math.floor(currentFrame2);
+    //                 }
+    //             }
+
+    //             scene.render();
+    //             lastTimestamp = timestamp;
+    //             requestAnimationFrame(animate);
+    //         }
+
+    //         requestAnimationFrame(animate);
+    //     } catch (error) {
+    //         console.error('Error starting animation:', error);
+    //     }
+    // }
     
     //var A = true
     //var B = true
@@ -4002,96 +4126,180 @@ document.addEventListener("DOMContentLoaded", function () {
     //     }
     // }
     
+    function calculateDisplacement(index) {
+        if (index === 1) return new BABYLON.Vector3(0, -0.01, 0);
+        if (index === 2) return new BABYLON.Vector3(0, 0.01, 0);
+        return BABYLON.Vector3.Zero();
+    }
+    
+    function handleSpriteSwitch({
+        sprite,
+        currentSpriteSheetIndex,
+        newSpriteSheetIndex,
+        spriteManagers,
+        basePosition,
+        spriteName,
+        currentFrame,
+        offsetX,
+        offsetY
+    }) {
+        // Same sheet → just update position + offsets
+        if (currentSpriteSheetIndex === newSpriteSheetIndex && sprite) {
+            sprite.position = basePosition.clone();
+            sprite.position.addInPlace(calculateDisplacement(currentSpriteSheetIndex));
+            sprite.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+            return { sprite, currentSpriteSheetIndex, currentFrame };
+        }
+    
+        // Switching to new spritesheet → dispose & recreate
+        if (sprite) sprite.dispose();
+    
+        currentSpriteSheetIndex = newSpriteSheetIndex;
+        sprite = new BABYLON.Sprite(spriteName, spriteManagers[currentSpriteSheetIndex]);
+        currentFrame = 0;
+        sprite.cellIndex = currentFrame;
+    
+        sprite.position = basePosition.clone();
+        sprite.position.addInPlace(calculateDisplacement(currentSpriteSheetIndex));
+        sprite.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    
+        return { sprite, currentSpriteSheetIndex, currentFrame };
+    }
+    
     function switchSprite1(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
         try {
-            if (currentSpriteSheetIndex1 === newSpriteSheetIndex && sprite1) {
-                // Same sheet → just update position + offsets
-                sprite1.position = D1.clone();
+            const result = handleSpriteSwitch({
+                sprite: sprite1,
+                currentSpriteSheetIndex: currentSpriteSheetIndex1,
+                newSpriteSheetIndex,
+                spriteManagers: spriteManagers1,
+                basePosition: D1,
+                spriteName: "sprite1",
+                currentFrame: currentFrame1,
+                offsetX,
+                offsetY
+            });
     
-                // Base displacement (up/down emphasis)
-                const displacement = new BABYLON.Vector3(
-                    0,
-                    currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
-                    0
-                );
-                sprite1.position.addInPlace(displacement);
-    
-                // Micro-motion offsets (breathing / jitter)
-                sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
-                return;
-            }
-    
-            // Switching to a new spritesheet → dispose and recreate
-            if (sprite1) sprite1.dispose();
-            currentSpriteSheetIndex1 = newSpriteSheetIndex;
-            sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
-            currentFrame1 = 0;
-            sprite1.cellIndex = currentFrame1;
-    
-            // Reset to base position
-            sprite1.position = D1.clone();
-    
-            // Base displacement (up/down emphasis)
-            const displacement = new BABYLON.Vector3(
-                0,
-                currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
-                0
-            );
-            sprite1.position.addInPlace(displacement);
-    
-            // Micro-motion offsets (breathing / jitter)
-            sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
-    
+            sprite1 = result.sprite;
+            currentSpriteSheetIndex1 = result.currentSpriteSheetIndex;
+            currentFrame1 = result.currentFrame;
         } catch (error) {
-            console.error('Error in switchSprite1:', error);
+            console.error("Error in switchSprite1:", error);
         }
     }
-
-
+    
     function switchSprite2(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
         try {
-            if (currentSpriteSheetIndex2 === newSpriteSheetIndex && sprite2) {
-                // Just update position with micro-offset if already same sprite
-                sprite2.position = D2.clone();
+            const result = handleSpriteSwitch({
+                sprite: sprite2,
+                currentSpriteSheetIndex: currentSpriteSheetIndex2,
+                newSpriteSheetIndex,
+                spriteManagers: spriteManagers2,
+                basePosition: D2,
+                spriteName: "sprite2",
+                currentFrame: currentFrame2,
+                offsetX,
+                offsetY
+            });
     
-                // Base displacement (up/down emphasis)
-                const displacement = new BABYLON.Vector3(
-                    0,
-                    currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
-                    0
-                );
-                sprite2.position.addInPlace(displacement);
-    
-                // Micro-motion offsets (breathing / jitter)
-                sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
-                return;
-            }
-    
-            // Dispose and replace sprite if switching to a new spritesheet
-            if (sprite2) sprite2.dispose();
-            currentSpriteSheetIndex2 = newSpriteSheetIndex;
-            sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
-            currentFrame2 = 0;
-            sprite2.cellIndex = currentFrame2;
-    
-                // Reset to base position
-            sprite2.position = D2.clone();
-    
-            // Base displacement (up/down emphasis)
-            const displacement = new BABYLON.Vector3(
-                    0,
-                currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
-                    0
-            );
-            sprite2.position.addInPlace(displacement);
-    
-            // Micro-motion offsets (breathing / jitter)
-            sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
-    
+            sprite2 = result.sprite;
+            currentSpriteSheetIndex2 = result.currentSpriteSheetIndex;
+            currentFrame2 = result.currentFrame;
         } catch (error) {
-            console.error('Error in switchSprite2:', error);
+            console.error("Error in switchSprite2:", error);
         }
     }
+    
+    // function switchSprite1(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
+    //     try {
+    //         if (currentSpriteSheetIndex1 === newSpriteSheetIndex && sprite1) {
+    //             // Same sheet → just update position + offsets
+    //             sprite1.position = D1.clone();
+    
+    //             // Base displacement (up/down emphasis)
+    //             const displacement = new BABYLON.Vector3(
+    //                 0,
+    //                 currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
+    //                 0
+    //             );
+    //             sprite1.position.addInPlace(displacement);
+    
+    //             // Micro-motion offsets (breathing / jitter)
+    //             sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    //             return;
+    //         }
+    
+    //         // Switching to a new spritesheet → dispose and recreate
+    //         if (sprite1) sprite1.dispose();
+    //         currentSpriteSheetIndex1 = newSpriteSheetIndex;
+    //         sprite1 = new BABYLON.Sprite("sprite1", spriteManagers1[currentSpriteSheetIndex1]);
+    //         currentFrame1 = 0;
+    //         sprite1.cellIndex = currentFrame1;
+    
+    //         // Reset to base position
+    //         sprite1.position = D1.clone();
+    
+    //         // Base displacement (up/down emphasis)
+    //         const displacement = new BABYLON.Vector3(
+    //             0,
+    //             currentSpriteSheetIndex1 === 1 ? -0.01 : currentSpriteSheetIndex1 === 2 ? 0.01 : 0,
+    //             0
+    //         );
+    //         sprite1.position.addInPlace(displacement);
+    
+    //         // Micro-motion offsets (breathing / jitter)
+    //         sprite1.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    
+    //     } catch (error) {
+    //         console.error('Error in switchSprite1:', error);
+    //     }
+    // }
+
+
+    // function switchSprite2(newSpriteSheetIndex, offsetX = 0, offsetY = 0) {
+    //     try {
+    //         if (currentSpriteSheetIndex2 === newSpriteSheetIndex && sprite2) {
+    //             // Just update position with micro-offset if already same sprite
+    //             sprite2.position = D2.clone();
+    
+    //             // Base displacement (up/down emphasis)
+    //             const displacement = new BABYLON.Vector3(
+    //                 0,
+    //                 currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
+    //                 0
+    //             );
+    //             sprite2.position.addInPlace(displacement);
+    
+    //             // Micro-motion offsets (breathing / jitter)
+    //             sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    //             return;
+    //         }
+    
+    //         // Dispose and replace sprite if switching to a new spritesheet
+    //         if (sprite2) sprite2.dispose();
+    //         currentSpriteSheetIndex2 = newSpriteSheetIndex;
+    //         sprite2 = new BABYLON.Sprite("sprite2", spriteManagers2[currentSpriteSheetIndex2]);
+    //         currentFrame2 = 0;
+    //         sprite2.cellIndex = currentFrame2;
+    
+    //             // Reset to base position
+    //         sprite2.position = D2.clone();
+    
+    //         // Base displacement (up/down emphasis)
+    //         const displacement = new BABYLON.Vector3(
+    //                 0,
+    //             currentSpriteSheetIndex2 === 1 ? -0.01 : currentSpriteSheetIndex2 === 2 ? 0.01 : 0,
+    //                 0
+    //         );
+    //         sprite2.position.addInPlace(displacement);
+    
+    //         // Micro-motion offsets (breathing / jitter)
+    //         sprite2.position.addInPlace(new BABYLON.Vector3(offsetX, offsetY, 0));
+    
+    //     } catch (error) {
+    //         console.error('Error in switchSprite2:', error);
+    //     }
+    // }
     
     // function updateSpriteBasedOnTime() {
     //     try {
@@ -4308,6 +4516,129 @@ document.addEventListener("DOMContentLoaded", function () {
     //         console.error('Error in updateSpriteBasedOnTime:', error);
     //     }
     // }
+    
+    // let history1 = [];
+    // let history2 = [];
+    // let lastSprite1 = 4;
+    // let lastSprite2 = 4;
+    // let mainEntry1 = null;
+    // let mainEntry2 = null;
+    // let emphasisEnd1 = 0;
+    // let emphasisEnd2 = 0;
+    
+    // const emphasisDuration = ((beatDuration*1000)/4);     // ms main movement dominates
+    // console.warn(emphasisDuration)
+    // const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
+    // console.warn(anticipationOffset)
+    // const maxHistory = BPM;             // length of rolling average
+    
+    // // Micro-motion config
+    // const microMotionRange = 0.01;    // sway range for moving (Babylon units)
+    // const idleDriftRange   = 0.005;   // sway range for idle (Babylon units)
+    // const idleDriftSpeed   = 0.002;   // speed of sine drift
+    
+    // function updateSpriteBasedOnTime() {
+    //     try {
+    //         if (!danceData1 || !danceData2 || !isAudioStarted) return;
+    //         let currentTime = performance.now();
+    
+    //         function rollingAverage(newValue, history) {
+    //             history.push(newValue);
+    //             if (history.length > maxHistory) history.shift();
+    //             return history.reduce((a,v)=>a+v,0)/history.length;
+    //         }
+    
+    //         function findNearestEntry(data, time) {
+    //             return data.reduce((nearest, entry) =>
+    //                 Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
+    //             );
+    //         }
+    
+    //         function lookAhead(data, time, window=1000) {
+    //             return data.find(e => e.t > time && e.t <= time + window);
+    //         }
+    
+    //         function getMicroOffsets(isIdle, now) {
+    //             if (isIdle) {
+    //                 // idle drift = smooth sine wave
+    //                 return {
+    //                     x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
+    //                     y: Math.cos(now * idleDriftSpeed) * idleDriftRange
+    //                 };
+    //             } else {
+    //                 // active micro jitter
+    //                 return {
+    //                     x: (Math.random() - 0.5) * microMotionRange,
+    //                     y: (Math.random() - 0.5) * microMotionRange
+    //                 };
+    //             }
+    //         }
+    
+    //         function applyEntry(entry, history, lastSprite, mainEntry, emphasisEnd, switchFn) {
+    //             let now = performance.now();
+    
+    //             // rolling avg direction
+    //             rollingAverage(entry.d, history);
+    
+    //             // look ahead for anticipation
+    //             let upcoming = lookAhead(danceData1, currentTime + anticipationOffset);
+    //             let target = entry.d;
+    //             if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
+    //                 target = Math.round((entry.d + upcoming.d) / 2);
+    //             }
+    
+    //             // maintain emphasis if active
+    //             if (mainEntry !== null && now < emphasisEnd) {
+    //                 let offsets = getMicroOffsets(mainEntry >= 4, now);
+    //                 switchFn(mainEntry, offsets.x, offsets.y);
+    //                 return { lastSprite, mainEntry, emphasisEnd };
+    //             }
+    
+    //             // if changed, emphasize or idle
+    //             if (entry.d !== lastSprite) {
+    //                 if (entry.d >= 0 && entry.d <= 3) {
+    //                     mainEntry = entry.d;
+    //                     emphasisEnd = now + Math.min(entry.l,emphasisDuration);
+    //                 } else {
+    //                     mainEntry = null;
+    //                 }
+    
+    //                 // small easing transition: halfway to target first
+    //                 const offsets = getMicroOffsets(entry.d >= 4, now);
+    //                 setTimeout(() => switchFn(target, offsets.x, offsets.y), 30);
+    //                 setTimeout(() => {
+    //                     let finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
+    //                     switchFn(entry.d, finalOffsets.x, finalOffsets.y);
+    //                 }, 60);
+    
+    //                 lastSprite = entry.d;
+    //             } else {
+    //                 // apply micro motion even if idle/repeated
+    //                 let offsets = getMicroOffsets(entry.d >= 4, now);
+    //                 switchFn(entry.d, offsets.x, offsets.y);
+    //             }
+    
+    //             return { lastSprite, mainEntry, emphasisEnd };
+    //         }
+    
+    //         // Anticipatory nearest entries
+    //         let nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
+    //         let nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
+    
+    //         ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
+    //             applyEntry(nearest1, history1, lastSprite1, mainEntry1, emphasisEnd1, switchSprite1));
+    
+    //         ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
+    //             applyEntry(nearest2, history2, lastSprite2, mainEntry2, emphasisEnd2, switchSprite2));
+    
+    //         setTimeout(updateSpriteBasedOnTime, 0);
+    
+    //     } catch (error) {
+    //         console.error('Error in updateSpriteBasedOnTime:', error);
+    //     }
+    // }
+    
+    // --- Globals ---
     let history1 = [];
     let history2 = [];
     let lastSprite1 = 4;
@@ -4317,115 +4648,161 @@ document.addEventListener("DOMContentLoaded", function () {
     let emphasisEnd1 = 0;
     let emphasisEnd2 = 0;
     
-    const emphasisDuration = ((beatDuration*1000)/4);     // ms main movement dominates
-    console.warn(emphasisDuration)
-    const anticipationOffset = ((beatDuration*1000)/16);    // ms look-ahead for anticipation
-    console.warn(anticipationOffset)
-    const maxHistory = BPM;             // length of rolling average
+    // Beat-scaled durations
+    const emphasisDuration   = (beatDuration * 1000) / 4;   // main movement dominates
+    const anticipationOffset = (beatDuration * 1000) / 16;  // look-ahead anticipation
+    
+    // Transition fractions of beat
+    const transition1 = (beatDuration * 1000) / 64; // ~1/64 beat
+    const transition2 = (beatDuration * 1000) / 32; // ~1/32 beat
     
     // Micro-motion config
-    const microMotionRange = 0.01;    // sway range for moving (Babylon units)
-    const idleDriftRange   = 0.005;   // sway range for idle (Babylon units)
-    const idleDriftSpeed   = 0.002;   // speed of sine drift
+    const microMotionRange = 0.01;
+    const idleDriftRange   = 0.005;
+    const idleDriftSpeed   = 0.002;
+    
+    // --- Helpers ---
+    
+    function rollingAverage(newValue, history, maxHistory) {
+        history.push(newValue);
+        if (history.length > maxHistory) history.shift();
+        console.warn(history.reduce((a, v) => a + v, 0) / history.length)
+        return history.reduce((a, v) => a + v, 0) / history.length;
+    }
+    
+    function findNearestEntry(data, time) {
+        return data.reduce((nearest, entry) =>
+            Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
+        );
+    }
+    
+    function lookAhead(data, time, window = 100) {
+        return data.find(e => e.t > time && e.t <= time + window);
+    }
+    
+    function getMicroOffsets(isIdle, now) {
+        if (isIdle) {
+            return {
+                x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
+                y: Math.cos(now * idleDriftSpeed) * idleDriftRange
+            };
+        } else {
+            return {
+                x: (Math.random() - 0.5) * microMotionRange,
+                y: (Math.random() - 0.5) * microMotionRange
+            };
+        }
+    }
+    
+    function calculateMaxHistory(data, beatsToAverage = 4) {
+        if (!data || data.length < 2) return beatsToAverage;
+    
+        const intervals = [];
+        for (let i = 1; i < data.length; i++) {
+            intervals.push(data[i].t - data[i - 1].t);
+        }
+        const avgInterval = intervals.reduce((a, v) => a + v, 0) / intervals.length;
+        const samplesPerBeat = Math.max(1, Math.round((beatDuration * 1000) / avgInterval));
+    
+        return samplesPerBeat * beatsToAverage;
+    }
+    
+    function applyEntry({
+        entry,
+        history,
+        lastSprite,
+        mainEntry,
+        emphasisEnd,
+        switchFn,
+        data,
+        currentTime,
+        maxHistory
+    }) {
+        rollingAverage(entry.d, history, maxHistory);
+    
+        let upcoming = lookAhead(data, currentTime + anticipationOffset);
+        let target = entry.d;
+        if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
+            target = Math.round((entry.d + upcoming.d) / 2);
+        }
+    
+        const now = currentTime;
+    
+        if (mainEntry !== null && now < emphasisEnd) {
+            const offsets = getMicroOffsets(mainEntry >= 4, now);
+            switchFn(mainEntry, offsets.x, offsets.y);
+            return { lastSprite, mainEntry, emphasisEnd };
+        }
+    
+        if (entry.d !== lastSprite) {
+            if (entry.d >= 0 && entry.d <= 3) {
+                mainEntry = entry.d;
+                emphasisEnd = now + emphasisDuration;
+            } else {
+                mainEntry = null;
+            }
+    
+            const offsets = getMicroOffsets(entry.d >= 4, now);
+            setTimeout(() => switchFn(target, offsets.x, offsets.y), transition1);
+            setTimeout(() => {
+                const finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
+                switchFn(entry.d, finalOffsets.x, finalOffsets.y);
+            }, transition2);
+    
+            lastSprite = entry.d;
+        } else {
+            const offsets = getMicroOffsets(entry.d >= 4, now);
+            switchFn(entry.d, offsets.x, offsets.y);
+        }
+    
+        return { lastSprite, mainEntry, emphasisEnd };
+    }
+    
+    // --- Main Update Function ---
     
     function updateSpriteBasedOnTime() {
         try {
             if (!danceData1 || !danceData2 || !isAudioStarted) return;
-            let currentTime = performance.now();
     
-            function rollingAverage(newValue, history) {
-                history.push(newValue);
-                if (history.length > maxHistory) history.shift();
-                return history.reduce((a,v)=>a+v,0)/history.length;
-            }
+            const currentTime = performance.now();
     
-            function findNearestEntry(data, time) {
-                return data.reduce((nearest, entry) =>
-                    Math.abs(entry.t - time) < Math.abs(nearest.t - time) ? entry : nearest
-                );
-            }
+            // Compute dynamic rolling average length
+            const maxHistory1 = calculateMaxHistory(danceData1, 4);
+            const maxHistory2 = calculateMaxHistory(danceData2, 4);
     
-            function lookAhead(data, time, window=1000) {
-                return data.find(e => e.t > time && e.t <= time + window);
-            }
-    
-            function getMicroOffsets(isIdle, now) {
-                if (isIdle) {
-                    // idle drift = smooth sine wave
-                    return {
-                        x: Math.sin(now * idleDriftSpeed) * idleDriftRange,
-                        y: Math.cos(now * idleDriftSpeed) * idleDriftRange
-                    };
-                } else {
-                    // active micro jitter
-                    return {
-                        x: (Math.random() - 0.5) * microMotionRange,
-                        y: (Math.random() - 0.5) * microMotionRange
-                    };
-                }
-            }
-    
-            function applyEntry(entry, history, lastSprite, mainEntry, emphasisEnd, switchFn) {
-                let now = performance.now();
-    
-                // rolling avg direction
-                rollingAverage(entry.d, history);
-    
-                // look ahead for anticipation
-                let upcoming = lookAhead(danceData1, currentTime + anticipationOffset);
-                let target = entry.d;
-                if (upcoming && upcoming.d >= 0 && upcoming.d <= 3) {
-                    target = Math.round((entry.d + upcoming.d) / 2);
-                }
-    
-                // maintain emphasis if active
-                if (mainEntry !== null && now < emphasisEnd) {
-                    let offsets = getMicroOffsets(mainEntry >= 4, now);
-                    switchFn(mainEntry, offsets.x, offsets.y);
-                    return { lastSprite, mainEntry, emphasisEnd };
-                }
-    
-                // if changed, emphasize or idle
-                if (entry.d !== lastSprite) {
-                    if (entry.d >= 0 && entry.d <= 3) {
-                        mainEntry = entry.d;
-                        emphasisEnd = now + Math.min(entry.l,emphasisDuration);
-                    } else {
-                        mainEntry = null;
-                    }
-    
-                    // small easing transition: halfway to target first
-                    const offsets = getMicroOffsets(entry.d >= 4, now);
-                    setTimeout(() => switchFn(target, offsets.x, offsets.y), 30);
-                    setTimeout(() => {
-                        let finalOffsets = getMicroOffsets(entry.d >= 4, performance.now());
-                        switchFn(entry.d, finalOffsets.x, finalOffsets.y);
-                    }, 60);
-    
-                    lastSprite = entry.d;
-                } else {
-                    // apply micro motion even if idle/repeated
-                    let offsets = getMicroOffsets(entry.d >= 4, now);
-                    switchFn(entry.d, offsets.x, offsets.y);
-                }
-    
-                return { lastSprite, mainEntry, emphasisEnd };
-            }
-    
-            // Anticipatory nearest entries
-            let nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
-            let nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
+            const nearest1 = findNearestEntry(danceData1, currentTime + anticipationOffset);
+            const nearest2 = findNearestEntry(danceData2, currentTime + anticipationOffset);
     
             ({ lastSprite: lastSprite1, mainEntry: mainEntry1, emphasisEnd: emphasisEnd1 } =
-                applyEntry(nearest1, history1, lastSprite1, mainEntry1, emphasisEnd1, switchSprite1));
+                applyEntry({
+                    entry: nearest1,
+                    history: history1,
+                    lastSprite: lastSprite1,
+                    mainEntry: mainEntry1,
+                    emphasisEnd: emphasisEnd1,
+                    switchFn: switchSprite1,
+                    data: danceData1,
+                    currentTime,
+                    maxHistory: maxHistory1
+                }));
     
             ({ lastSprite: lastSprite2, mainEntry: mainEntry2, emphasisEnd: emphasisEnd2 } =
-                applyEntry(nearest2, history2, lastSprite2, mainEntry2, emphasisEnd2, switchSprite2));
+                applyEntry({
+                    entry: nearest2,
+                    history: history2,
+                    lastSprite: lastSprite2,
+                    mainEntry: mainEntry2,
+                    emphasisEnd: emphasisEnd2,
+                    switchFn: switchSprite2,
+                    data: danceData2,
+                    currentTime,
+                    maxHistory: maxHistory2
+                }));
     
-            setTimeout(updateSpriteBasedOnTime, 0);
+            requestAnimationFrame(updateSpriteBasedOnTime);
     
         } catch (error) {
-            console.error('Error in updateSpriteBasedOnTime:', error);
+            console.error("Error in updateSpriteBasedOnTime:", error);
         }
     }
 
