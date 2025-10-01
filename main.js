@@ -4365,7 +4365,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!danceData1 || !danceData2 || !isAudioStarted) return;
     
             const currentTime = performance.now();
-            const anticipationOffset = beatDuration * 1000 / 16; // small look-ahead
+            const anticipationOffset = beatDuration * 1000 / 64; // small look-ahead
     
             // Find the nearest note that is currently active or upcoming
             function findNearestEntry(data, time) {
