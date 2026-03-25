@@ -1,6 +1,6 @@
 # ThatGuyFunkin - Dynamic 3D Modelling Platform for Rhythm Game Modding
 
-https://thatguycalledben.com/ThatGuyFunkin/
+https://thatguycalledben.com/ThatGuyReflectiveSolo/
 
 ## Introduction
 Welcome to ThatGuyFunkin, an innovative platform designed for rhythm game enthusiasts and developers to create immersive 3D worlds and gameplay experiences. Led by Ben, this project leverages Babylon.js to empower new developers to craft intricate environments around their characters. Join us in exploring the limitless possibilities of dynamic 3D modelling and game design!
